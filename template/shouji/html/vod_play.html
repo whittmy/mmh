@@ -1,0 +1,179 @@
+
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta charset="utf-8">
+<title>正在播放 [vod:name] [vod:playname]</title>
+<meta content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no" id="viewport" name="viewport">
+<meta content="[vod:name][vod:playname]免费在线观看,[vod:name]剧情介绍,[vod:name]数据海报" name="Description">
+<meta content="[vod:name][vod:playname]免费在线观看,[vod:name]剧情介绍,[vod:name]数据海报" name="Keywords">
+<meta content="telephone=no" name="format-detection" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta content="{maccms:name}" name="apple-mobile-web-app-title">
+
+{maccms:include}
+<!--判断跳转--    
+ <script type="text/javascript">
+    var system = {
+        win: false,
+        mac: false,
+        xll: false
+    };
+    var p = navigator.platform;
+    system.win = p.indexOf("Win") == 0;
+    system.mac = p.indexOf("Mac") == 0;
+    system.x11 = (p == "X11") || (p.indexOf("Linux") == 0);
+    if (system.win || system.mac || system.xll) {
+	window.location.href = "http://www.456dy.com/";
+	} else {}
+</script>
+<!--判断跳转--> 
+ <link href="{maccms:path_tpl}css/global.css" rel="stylesheet" type="text/css">
+<script type="text/javascript">uaredirect("[vod:link]");</script>
+<link href="[vod:link]" rel="canonical" />
+<link href="{maccms:path_tpl}css/tv.detail.css" rel="stylesheet" type="text/css">
+ </head>
+<body>
+<div class="wrapper">
+
+  <div class="mask" id="mask_box"></div>
+  <header class="header sHeader clearfix">
+    <p class="headLeft"><a href="javascript:historyBack();" class="aGoBack"><i class="moreArrow"></i></a></p>
+    <p class="headRight"><a class="aHome" href="{maccms:path}" target="_self" ><span>首页</span></a> <a href="javascript:void(0);" class="aNav"><span>导航</span></a> 
+	<a href="javascript:void(0);"  target="_self" class="aUnLogin"><span id="unameHeader">会员</span></a>
+	</p>
+	<section id="ls_box" class="searchMenu" style="display:none;">
+            <div class="hisBox fn-left">
+            <div class="looked-box" id="history">
+            <div class="looked-list"><p><a class="close-his" href="{maccms:path}index.php?m=user-index.html"  target="_self">用户登录</a><a class="clear-his" href="{maccms:path}index.php?m=user-reg.html" target="_self">注册会员</a></p></div></div>
+            </div>
+      	</section>
+  </header>
+  <nav class="subNav globalPadding index_menu_top" id="nav_menu" style="display:none;">
+    <div class="con clearfix">
+	<p>
+	
+	<a href={maccms:path}"   target="_self">首页</a>
+	{maccms:menu type=1,2,3,4 order=asc table=vod}
+	<a href="[menu:link]" {if-A:{maccms:curvodtypeid}=[menu:id]}class="cur"{endif-A}{if-A:{maccms:curvodtypepid}=[menu:id]}class="cur"{endif-A}  target="_self" >[menu:name]</a>{/maccms:menu} <!-- <a href="/tv.html"  target="_self">直播</a> -->
+	
+	</p>
+    </div>
+  </nav>
+
+
+ 
+  <section class="main">
+    <div class="detailPosterIntro globalPadding clearfix" style="height:auto;">
+[vod:playerinfo]
+	[vod:player]  
+				  
+			
+    <div class="tab globalPadding">
+      <ul class="tabNav clearfix">
+        <li><span class="cur">剧集</span></li>
+        <li><span >简介</span></li>
+        <li><span>评论</span></li>
+      </ul>
+    </div>
+ <script type="text/javascript" src="{maccms:path_tpl}js/zepto.js"></script> 
+<script type="text/javascript" src="{maccms:path_tpl}js/jquery.lazyload.min.js"></script> 
+<script type="text/javascript" src="{maccms:path_tpl}js/jquery.cookie.min.js"></script> 
+<script type="text/javascript" src="{maccms:path_tpl}js/md5.min.js"></script> 
+<script type="text/javascript" src="{maccms:path_tpl}js/iscroll.js"></script> 
+<script type="text/javascript" src="{maccms:path_tpl}js/common.min.js"></script>
+     <div class="tabConList globalPadding">
+      <div class="tabCon" style="display:block">
+<script type="text/javascript">
+$(function(){
+var i=0;
+function oooTab (){
+	$(this).addClass("current").siblings().removeClass("current").parent().siblings().hide().siblings("."+$(this).attr("id")).show();
+}
+$(".tabt span,.tabt2 span").mouseover(oooTab);
+$(".tabt3 span").click(oooTab);
+});
+</script>
+             <dl class="tab2">
+                <dt class="tabt3">
+                <span style="background:none;color:#333;font-size:15px;width:auto; ">播放源</span>
+{maccms:play}{if-A:"[vod:playfromshow]"="[play:show]"}
+ <span id="[play:from]"  class="current">
+                        [play:show]       
+                        </span>  {maccms:url order=desc}{/maccms:url}{endif-A}{/maccms:play}                                          
+                </dt>{maccms:play}{if-A:"[vod:playfromshow]"="[play:show]"}
+                 <dd class="[play:from]" style="display:block">
+                    <ul class="ulNumList clearfix list_1"> 
+					{maccms:url order=desc}
+                <li> <a href="[url:link]" {if-B:[url:num]=[vod:playnum]}class="cur"{endif-B} target="_self" title="[url:name]" alt="[url:name]">[url:name]<i class='iNewIcon'></i></a></li>
+											{/maccms:url}
+											 
+                    </ul>
+                </dd>         {endif-A}{/maccms:play}                          
+            </dl>
+      </div>
+         <div class="tabCon" >
+        <ul class="ulTxt clearfix" id="movie_info_ul">
+          <li><span class="sTit">类型：</span>
+            <p><em><a href="[vod:typelink]">[vod:typename]</a></em> </p>
+          </li>
+          <li><span class="sTit">年代：</span>
+            <p><em><a href="[vod:yearlink]" target="_blank">[vod:year]</a>  </em></p>
+          </li>
+          <li><span class="sTit">地区：</span>
+            <p><em><a href="[vod:arealink]" target="_blank">[vod:area]</a></em></p>
+          </li>
+          <li><span class="sTit">状态：</span>
+            <p><em>[vod:state]</em></p>
+          </li>
+          <li class="liAll"><span class="sTit">导演：</span>
+            <p><em>[vod:directedlink]&nbsp;<font color="#FF0000"></font></em></p>
+          </li>
+          <li class="liAll"><span class="sTit">主演：</span>
+            <p> <em>[vod:starringlink]</em> </p>
+          </li>
+        </ul>
+         <p class="movieintro" id="movie_info_intro_s"><span style="color:#333;">剧情简介：</span> [vod:content]</p>
+      </div>
+<!--box 影片信息 END--> 
+ <div class="tabCon" style="display:none">
+        <div class="ui-titlej"  style="width:98%; margin-top:10px; padding:5px 1%; font-weight:bold; color:#333;">
+          <h3><strong style="color:#F93;">[vod:name]</strong> 网友评论</h3>
+        </div>
+    <div style="width:98%; padding:0 1%;">
+
+    </div>
+</div>
+    <!--<div class="mod_b">
+      <div class="th_b"><span class="sMark">猜你喜欢</span></div>
+      <div class="tb_b">
+        <ul class="picTxt picTxtA clearfix" id="resize_list">
+         {maccms:vod num=6 order=desc by=monthhits}
+<li>
+        <div class="con">
+            <a href="[vod:link]" target="_self">
+            <img  src="[vod:pic]" alt="[vod:name]" ><span class="sNum"><em class="emScore">[vod:score]</em>分</span>  <span class="sTit">[vod:name]</span>
+            </a>
+        </div>
+    </li>
+	  {/maccms:vod}
+         </ul>
+      </div>
+    </div>-->
+  </section>
+  <footer class="footer">
+    <p class="pLinks"><a href="{maccms:path}" onclick="_dct_('m_gongyong_pc');">影视首页</a>|<a href="#">用户反馈</a>|<a href="javascript:scroll(0,0)" target="_self">返回顶部</a></p>
+    <p class="copyRight">Copyright &copy; {maccms:name} <script src="http://s4.cnzz.com/stat.php?id=1253342745&web_id=1253342745" language="JavaScript"></script> </p>
+  </footer>
+</div>
+
+ <script>
+// 重置图片尺寸
+resizeImgCommon('resize_list');
+$(window).on('resize',function(){resizeImgCommon('resize_list');});
+ // 延迟加载
+$('#resize_list img').lazyload({data_attribute:'src',threshold:30});
+</script>
+</body>
+</html>

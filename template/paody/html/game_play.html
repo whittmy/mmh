@@ -1,0 +1,63 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>正在播放 [game:name] [game:playname]</title>
+<meta name="Keywords" content="[game:name][game:playname]免费在线观看,[game:name]剧情介绍,[game:name]数据海报" />
+<meta name="description" content="[game:name][game:playname]免费在线观看,[game:name]剧情介绍,[game:name]数据海报" />
+{maccms:include}
+<link href="{maccms:path_tpl}css/play_mode2.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+{maccms:head}
+<div class="wrap">
+  <div class="money_all"><script type="text/javascript" language="javascript" src="{maccms:path_ads}all-top.js"></script></div>
+  <div class="b"><h6>当前位置：[game:textlink]  [game:playname]</h6></div>
+  <div class="box bg mb">
+    <div class="l player">
+      <div>[game:playerinfo][game:player]</div>
+      <div class="tools">[game:digg]|[game:error]|[game:fav]|[game:share]<a href="[game:link]">影片详情</a></div>
+    </div>
+    <!--/Player-->
+    <div class="r prad">
+		<div class="box"><script type="text/javascript" language="javascript" src="{maccms:path_ads}play301.js"></script></div>
+      <div class="box"><script type="text/javascript" language="javascript" src="{maccms:path_ads}play302.js"></script></div>
+    </div>
+    <!--/PRAD-->
+  </div>
+  <!--/Box-->
+  <div class="box mb"><script type="text/javascript" language="javascript" src="{maccms:path_ads}play902.js"></script></div>
+ 
+ {maccms:play} <div class="mb box pbox"><a name="playlist"></a>
+    <div class="b playlist mb" id="play_[play:num]">
+      <h4><strong>播放地址1：[play:from]<span>[[play:tip]]</span></strong><p class="more red"><span id="vlink_[play:num]_s1"><em onclick="Order(1,'vlink_[play:num]',[play:num])">倒序↑</em></span><span id="vlink_1_s2"><em onclick="Order(0,'vlink_[play:num]',[play:num])">顺序↓</em></span></p></h4>
+      <div id="vlink_1">
+    <ul>{maccms:url order=asc}<li><a href="[url:link]" target="_blank">[url:name]</a></li>{/maccms:url}</ul>
+      </div>
+    </div> {/maccms:play}
+    
+    <!--/PlayList-->
+    <script>//Wnew(0);</script>
+    [game:comment]
+    <div class="commend b commend_p">
+      <h4><strong>你是否也在寻找</strong></h4>
+      <ul>
+        {maccms:game type=current num=8 order=desc by=time}
+          <li><a href="[game:link]" title="[game:name]" class="bk"><img src="[game:pic]" alt="[game:name]" /></a><span>{if-A:[game:state]<1}[game:remarks]{elseif-A:[game:state]<1000 and [game:state]>0}第[game:state]集{elseif-A:[game:state]>1000}[game:state]期{elseif-A:[game:state]=0 and "[game:remarks]"=""}大结局{else-A}{endif-A}</span><strong><a href="[game:link]">[game:name]</a></strong></li>{/maccms:game}
+      </ul>
+      <ol>
+            {maccms:game num=16 type=current by=time day=7 start=6 order=desc}
+<li><a href="[game:link]" target="_blank" title="[game:name]">[game:name]</a><span>[game:typename]/[game:year]</span></li>
+{/maccms:game}
+      </ol>
+    </div>
+    <!--/Commend-->
+  </div>
+  <!--/Box-->
+  <div class="money_all"><script type="text/javascript" language="javascript" src="{maccms:path_ads}play903.js"></script></div>
+</div>
+<!--/Wrap-->
+{maccms:foot}
+<!--/Footer-->
+</body>
+</html>

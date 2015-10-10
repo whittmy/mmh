@@ -1,0 +1,135 @@
+
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta charset="utf-8">
+<title>{page:key}-{maccms:name}</title>
+<meta content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no" id="viewport" name="viewport">
+<meta content="{page:key},{maccms:name}" name="Description">
+<meta content="{page:key},{maccms:name}" name="Keywords">
+<meta content="telephone=no" name="format-detection" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta content="{maccms:name}" name="apple-mobile-web-app-title">
+<link href="{maccms:path_tpl}css/search.css" rel="stylesheet" type="text/css">
+<link href="{maccms:path_tpl}css/global.css" rel="stylesheet" type="text/css">
+
+<script type="text/javascript" src="{maccms:path_tpl}js/home.js"></script> 
+<!--判断跳转--     
+ <script type="text/javascript">
+    var system = {
+        win: false,
+        mac: false,
+        xll: false
+    };
+    var p = navigator.platform;
+    system.win = p.indexOf("Win") == 0;
+    system.mac = p.indexOf("Mac") == 0;
+    system.x11 = (p == "X11") || (p.indexOf("Linux") == 0);
+    if (system.win || system.mac || system.xll) {
+	window.location.href = "http://www.molqq.com/";
+	} else {}
+</script>
+<!--判断跳转--> 
+<script>
+function fav(){
+		var url = window.location.href;					 
+		try{
+			window.external.addFavorite(url,document.title);
+		}catch(err){
+			try{
+				window.sidebar.addPanel(document.title, url,"");
+			}catch(err){
+				alert("请使用Ctrl+D为您的浏览器添加书签！");
+			}
+		}
+}
+ </script>
+</head>
+<body>
+<div class="wrapper">
+
+  <div class="mask" id="mask_box"></div>
+  <header class="header sHeader clearfix">
+    <p class="headLeft"><a href="javascript:historyBack();" class="aGoBack"><i class="moreArrow"></i></a></p>
+    <p class="headRight"><a class="aHome" href="{maccms:path}" target="_self" ><span>首页</span></a> <a href="javascript:void(0);" class="aNav"><span>导航</span></a> 
+	<a href="javascript:void(0);"  target="_self" class="aUnLogin"><span id="unameHeader">会员</span></a>
+	</p>
+	<section id="ls_box" class="searchMenu" style="display:none;">
+            <div class="hisBox fn-left">
+            <div class="looked-box" id="history">
+            <div class="looked-list"><p><a class="close-his" href="{maccms:path}index.php?m=user-index.html"  target="_self">用户登录</a><a class="clear-his" href="{maccms:path}index.php?m=user-reg.html" target="_self">注册会员</a></p></div></div>
+            </div>
+      	</section>
+  </header>
+  <nav class="subNav globalPadding index_menu_top" id="nav_menu" style="display:none;">
+    <div class="con clearfix">
+	<p>
+	<a href={maccms:path}"   target="_self">首页</a>
+	{maccms:menu type=1,2,3,4 order=asc table=vod}
+	<a href="[menu:link]" {if-A:{maccms:curvodtypeid}=[menu:id]}class="cur"{endif-A}{if-A:{maccms:curvodtypepid}=[menu:id]}class="cur"{endif-A}  target="_self" >[menu:name]</a>{/maccms:menu}
+	</p>
+    </div>
+  </nav>
+ 
+    <section id="search_box" class="searchMenu" style="display:none">
+            <form action="{maccms:link_search_vod}" method="post" >
+            <div class="searchFormCon globalPadding">
+            <p class="pSearchForm">
+            <input type="text" class="searchTxt searchTxtBlur" id="wd" name="wd" onblur="if(this.value==''){ this.value='100万部影片任你搜索';this.style.color='#cfcdcd';}" onfocus="if(this.value=='100万部影片任你搜索'){this.value='';this.style.color='';}" value="100万部影片任你搜索" /><input type="submit" value="" class="searchBtn"><i class="clearSearchBtn" style="display:none;"><em></em></i>
+            </p>
+            </div>
+            </form>
+       
+		
+		
+    </section>
+        <section class="searchMain globalPadding" id="search_main">
+    <nav class="searchNav" id="search_menu">
+      <div class="con clearfix">
+        <p> <a target="_self" href="javascript:void(0)" class="cur">搜索和 <strong style="color:#e12160;">{page:key}</strong> 相关的影片</a> 
+      </div>
+    </nav>
+    <ul class="ulPicTxt clearfix" id="data_list">
+    {maccms:vod pagesize=10 order=desc by=time}
+      <li>
+        <div class="pic"><a href="[vod:link]" target="_self"><img data-src="[vod:pic]" src="{maccms:path}images/blank.png" onerror="nofind(this);" alt=""><span class="sStyle">[vod:typename]</span></a></div>
+        <div class="txt"> 
+        <span class="sTit"><a href="[vod:link]" target="_self">[vod:name]</a></span> 
+        <span class="sDes">
+                                  [vod:state]                          </span>
+        <p class="playList clearfix"> 
+        <span><em>主演：</em>[vod:starringlink]</span> 
+        <span><em>导演：</em>[vod:directedlink]</span> 
+        <span><em>地区：</em>[vod:arealink] </span>
+        <span><em>年份：</em>[vod:yearlink]   </span>
+        </p>
+        <span class="sBtn"> <a href="[vod:playlink]" class="aPlayBtn" rel="nofollow">播放</a> </span>
+        
+        </div>
+      </li>{/maccms:vod}	  <br />
+    </ul>
+        <div class="ui-page-big ui-pages" id="long-page">
+        {maccms:pages}		</div>
+          
+    </section>
+  <footer class="footer">
+    <p class="pLinks"><a href="{maccms:path}" onclick="_dct_('m_gongyong_pc');">影视首页</a>|<a href="#">用户反馈</a>|<a href="javascript:scroll(0,0)" target="_self">返回顶部</a></p>
+    <p class="copyRight">Copyright &copy; {maccms:name}<script src="http://s4.cnzz.com/stat.php?id=1253342745&web_id=1253342745" language="JavaScript"></script> </p>
+  </footer>
+</div>
+<script type="text/javascript" src="{maccms:path_tpl}js/zepto.js"></script> 
+<script type="text/javascript" src="{maccms:path_tpl}js/jquery.lazyload.min.js"></script> 
+<script type="text/javascript" src="{maccms:path_tpl}js/jquery.cookie.min.js"></script> 
+<script type="text/javascript" src="{maccms:path_tpl}js/login.min.js"></script> 
+<script type="text/javascript" src="{maccms:path_tpl}js/iscroll.js"></script> 
+<script type="text/javascript" src="{maccms:path_tpl}js/common.min.js"></script>
+
+<script>
+$('#data_list img').lazyload({
+	data_attribute:'src',
+	threshold:30
+});
+</script>
+</body>
+</html>

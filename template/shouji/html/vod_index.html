@@ -1,0 +1,149 @@
+<html><head>
+<meta charset="utf-8">
+<title>{maccms:name}-手机电影网</title>
+<meta content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no" id="viewport" name="viewport">
+<meta content="{maccms:keywords}" name="Description">
+<meta content="{maccms:description}" name="Keywords">
+<meta content="telephone=no" name="format-detection">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta content="{maccms:name}" name="apple-mobile-web-app-title">
+<script charset="utf-8" src="{maccms:path_tpl}js/jquery-1.7.2.min.js"></script>
+<script charset="utf-8" src="{maccms:path_tpl}js/jquery.autocomplete-1.1.js"></script>
+<script type="text/javascript" src="{maccms:path_tpl}js/home.js"></script> 
+
+ <link href="{maccms:path_tpl}css/global.css" rel="stylesheet" type="text/css">
+
+<script src="{maccms:path_tpl}js/uaredirectformobile.js" type="text/javascript"></script>
+<!--判断跳转--     
+ <script type="text/javascript">
+    var system = {
+        win: false,
+        mac: false,
+        xll: false
+    };
+    var p = navigator.platform;
+    system.win = p.indexOf("Win") == 0;
+    system.mac = p.indexOf("Mac") == 0;
+    system.x11 = (p == "X11") || (p.indexOf("Linux") == 0);
+    if (system.win || system.mac || system.xll) {
+	window.location.href = "http://www.456dy.com/";
+	} else {}
+</script>
+<!--判断跳转--> 
+<link href="{maccms:path}" rel="canonical">
+<link href="{maccms:path_tpl}css/index_v2.css" rel="stylesheet" type="text/css">
+ </head>
+<body>
+<div class="wrapper">
+ <div class="mask" id="mask_box"></div>
+	<header class="header clearfix">
+	<p class="headLeft"><a href="{maccms:path}" class="aLogo"></a></p>
+	<p class="headRight">
+	<a href="javascript:void(0);" class="aSearch"><span>搜索</span></a>
+	<a href="{maccms:getlink top.html}" class="aRank"><span>榜单</span></a>
+	<a href="javascript:void(0);" target="_self" class="aUnLogin"><span id="history">会员</span></a>
+
+	</p>
+    	<section id="ls_box" class="searchMenu" style="display:none;">
+            <div class="hisBox fn-left">
+            <div class="looked-box" id="history">
+            <div class="looked-list"><p><a class="close-his" href="{maccms:path}index.php?m=user-index.html"  target="_self">用户登录</a><a class="clear-his" href="{maccms:path}index.php?m=user-reg.html" target="_self">注册会员</a></p></div></div>
+            </div>
+      	</section>
+	</header>
+	<nav class="subNav globalPadding" id="nav_menu" style="display: block; overflow: hidden;">
+	<div class="con clearfix" style="width: 494px; -webkit-transition: -webkit-transform 0ms; transition: -webkit-transform 0ms; -webkit-transform-origin: 0px 0px; -webkit-transform: translate(0px, 0px) translateZ(0px);">
+	<p>
+	
+	<a href="{maccms:path}" {if-A:{maccms:siteaid}=10}class="cur"{endif-A} target="_self">首页</a>
+	{maccms:menu type=1,2,3,4 order=asc table=vod}
+	<a href="[menu:link]" {if-A:{maccms:curvodtypeid}=[menu:id]}class="cur"{endif-A}{if-A:{maccms:curvodtypepid}=[menu:id]}class="cur"{endif-A} target="_self">[menu:name]</a>{/maccms:menu} <!-- <a href="/tv.html"  target="_self">直播</a> -->
+
+	</p>
+	</div>
+	</nav>
+		<section id="search_box" class="searchMenu" style="display:none">
+               <form action="{maccms:link_search_vod}" method="post" >
+            <div class="searchFormCon globalPadding">
+            <p class="pSearchForm">
+            <input type="text" class="searchTxt searchTxtBlur" id="wd" name="wd" onblur="if(this.value==''){ this.value='100万部影片任你搜索';this.style.color='#cfcdcd';}" onfocus="if(this.value=='100万部影片任你搜索'){this.value='';this.style.color='';}" value="100万部影片任你搜索" /><input type="submit" value="" class="searchBtn"><i class="clearSearchBtn" style="display:none;"><em></em></i>
+            </p>
+            </div>
+            </form>        
+    <div class="search_hotkey">
+	{maccms:vod num=12 type=all order=desc by=dayhits}
+<a href="[vod:link]" title="[vod:name]" alt="[vod:name]">[vod:name]</a>
+ {/maccms:vod}
+
+    </div>     
+		</section> 
+    <nav class="subNav globalPadding index_menu_top" id="nav_menu" style="display:none;">
+    <div class="con clearfix" style="width: 494px;">
+    <p>
+<a href="{maccms:path}" {if-A:{maccms:siteaid}=10}class="cur"{endif-A} target="_self">首页</a>
+	{maccms:menu type=1,2,3,4 order=asc table=vod}
+	<a href="[menu:link]" {if-A:{maccms:curvodtypeid}=[menu:id]}class="cur"{endif-A}{if-A:{maccms:curvodtypepid}=[menu:id]}class="cur"{endif-A} target="_self">[menu:name]</a>{/maccms:menu}
+    </p>
+    </div>
+    </nav>
+
+ 
+<section class="main">
+<!--幻灯开始-->
+<div class="focus" id="focus">
+  <ul class="focusCon clearfix" id="focusCon" style="height: 201px;">
+   {maccms:vod num=6 by=time level=all type=all order=desc}
+   <li class="cur"><a href="[vod:link]" title="[vod:name]" alt="[vod:name]" target="_self"><img src="[vod:pic]" alt="[vod:name]" ><span class="sTit"><em>[vod:name]</em></span></a></li>
+{/maccms:vod}
+           </ul>
+  <p class="focusTab" id="focusTab"><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i></p>
+</div>
+<!--幻灯结束-->
+
+{maccms:matrix type=1,2,3,4 table=vod}
+<div class="mod_a globalPadding">
+<div class="th_a"><span class="sMark"><i class="iPoint"></i>[matrix:name]</span><a href="[matrix:link]" class="aMore" target="_blank"><i class="moreArrow"></i></a></div>
+<div class="tb_a">
+<ul class="picTxt picTxtA clearfix" >
+{maccms:vod num=6 by=time type=[matrix:id] order=desc}
+<li>
+<div class="con">
+<a href="[vod:link]" target="_self">
+<div class="picsize">
+<img data-src="[vod:pic]" src="{maccms:path}images/blank.png" alt="[vod:name]" style="height: 115px; display: block; width: 115px;><span class="sNum">更新至[vod:state]</span>
+</div>
+<span class="sTit">[vod:name]</span>
+<span class="sDes">[vod:directed]</span>
+</a>
+</div>
+</li>
+{/maccms:vod}
+ </ul>
+</div>
+</div>
+{/maccms:matrix}
+
+</section>
+   <footer class="footer">
+    <p class="pLinks"><a href="{maccms:path}" onclick="_dct_('m_gongyong_pc');">影视首页</a>|<a href="#">用户反馈</a>|<a href="javascript:scroll(0,0)" target="_self">返回顶部</a></p>
+    <p class="copyRight">Copyright © {maccms:name} <script src="http://s4.cnzz.com/stat.php?id=1253342745&web_id=1253342745" language="JavaScript"></script>
+</p>
+  </footer>
+ </div>
+<script type="text/javascript" src="{maccms:path_tpl}js/zepto.js"></script>
+<script type="text/javascript" src="{maccms:path_tpl}js/jquery.lazyload.min.js"></script>
+<script type="text/javascript" src="{maccms:path_tpl}js/jquery.cookie.min.js"></script>
+<script type="text/javascript" src="{maccms:path_tpl}js/md5.min.js"></script>
+<script type="text/javascript" src="{maccms:path_tpl}js/iscroll.js"></script>
+<script type="text/javascript" src="{maccms:path_tpl}js/common.min.js"></script>
+<script type="text/javascript" src="{maccms:path_tpl}js/index.min.js"></script>
+<script>
+// 重置图片尺寸
+resizeImgCommon('data_list');
+$(window).on('resize',function(){resizeImgCommon('data_list');});
+// 延迟加载
+$('#data_list img').lazyload({data_attribute:'src',threshold:30});
+</script>
+ 
+</body></html>

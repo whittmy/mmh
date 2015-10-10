@@ -1,0 +1,227 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=7" />
+<title>游戏信息 - 苹果CMS</title>
+<link rel="stylesheet" type="text/css" href="tpl/images/style.css" />
+<link rel="stylesheet" type="text/css" href="../images/jq/jquery.webox.css" />
+<script type="text/javascript" src="../js/jquery.js"></script>
+<script type="text/javascript" src="../js/jq/jquery.cookie.js"></script>
+<script type="text/javascript" src="../js/jq/jquery.validate.js"></script>
+<script type="text/javascript" src="../js/jq/jquery.webox.js"></script>
+<script type="text/javascript" src="tpl/js/adm.js"></script>
+<script type="text/javascript" src="tpl/js/jscolor.js"></script>
+<script language="javascript" src="editor/xheditor-zh-cn.min.js"></script>
+<script language="javascript" src="editor/xheditor_lang/zh-cn.js"></script>
+<script language="javascript">
+$(function(){
+	$("#form1").validate({
+		rules:{
+			d_name:{
+				required:true
+			},
+			d_type:{
+				required:true
+			}
+		}
+	});
+	$("#btnRndHits").click(function(){
+		$("#d_hits").val( rndNum(999) );
+		$("#d_monthhits").val( rndNum(300) );
+		$("#d_weekhits").val( rndNum(100) );
+		$("#d_dayhits").val( rndNum(10) );
+		$("#d_up").val( rndNum(100) );
+		$("#d_down").val( rndNum(100) );
+		var scorenum = rndNum(100) 
+		var scoreall = scorenum * rndNum(10);
+		var scorea = scoreall / scorenum ;
+		$("#d_score").val( scorea );
+		$("#d_scoreall").val( scoreall );
+		$("#d_scorenum").val( scorenum );
+	});
+	$("#btnCancel").click(function(){
+		location.href=$("#backurl").val();
+	});
+});
+
+var d_class='';
+
+function getClass(id,sclass)
+{
+	if(id!=""){
+		$.ajax({
+			type: 'get',
+			cache: false,
+			dataType: 'json',
+			url: "admin_data.php?ac=getgameclass&id="+id+'&class='+sclass,
+			timeout: 3000, 
+			success:function(r){
+				$("#div_class").html('');
+				if(r.length>0){
+					$.each(r, function(i,row){
+						chk = row.chk=='true' ? 'checked' : '';
+						$("#div_class").append('<input type="checkbox" name="d_class[]" value="'+row.id+'" '+chk+' />' +row.name);
+				  }); 
+				}
+			}
+		});
+	}
+}
+function showUpload(n){
+	$.webox({
+		width:400,
+		height:300,
+		bgvisibel:true,
+		title:'批量上传附件',
+		iframe:'editor/uploadfiles.php?action=uploadify&path=files&id='+n
+	});
+}
+</script>
+</head>
+<body>
+<div id="showpic" style="display:none;"><img name="showpic_img" id="showpic_img" width="120" height="160"></div>
+<form action="admin_data.php?ac=save&tab=game" method="post" name="form1" id="form1">
+<input id="d_id" name="d_id" type="hidden" value="{d_id}">
+<input name="d_addtime" type="hidden" value="{d_addtime}">
+<input name="d_time" type="hidden" value="{d_time}">
+<input id="flag" name="flag" type="hidden" value="{flag}">
+<input id="backurl" name="backurl" type="hidden" value="{backurl}">
+<div class="toptit">游戏信息</div>
+<table class="tbinfo pleft">
+	<tr>
+	<td width="100" class="hl">参数：</td>
+	<td class="hl">
+	<select id="d_type" name="d_type"  onchange="getClass(this.options[this.options.selectedIndex].value,'');" >
+	<option value="">请选择分类</option>
+	<!-- BEGIN list_type -->
+	<option value="{v}" {c}>{n}</option>
+	<!-- END list_type -->
+	</select>
+	&nbsp;<select id="d_level" name="d_level" >
+	<option value="">选择推荐值</option>
+	<!-- BEGIN list_level -->
+	<option value="{v}" {c}>{n}</option>
+	<!-- END list_level -->
+	</select>
+	&nbsp;<select id="d_hide" name="d_hide">
+	<!-- BEGIN list_hide -->
+	<option value="{v}" {c}>{n}</option>
+	<!-- END list_hide -->
+	</select>
+	&nbsp;<input type="checkbox" name="uptime" value="1" class="nst" checked>更新时间
+	&nbsp;<input type="checkbox" name="d_lock" value="1" class="nst" title="锁定后采集不更新" <!-- IF islock --> checked <!-- ENDIF islock -->>锁定
+	</td>
+	</tr>
+	<!-- IF isexpandtype -->
+	<tr> 
+    <td>扩展多分类：</td>
+    <td>
+	<div id="div_expandtype" ></div><script type="text/javascript">getExpandType('{d_type}','{d_type_expand}')</script>
+	</td>
+	</tr>
+	<!-- ENDIF isexpandtype -->
+	<tr> 
+    <td>剧情分类：</td>
+    <td>
+	<div id="div_class" ></div><script type="text/javascript">getClass('{d_type}','{d_class}')</script>
+	</td>
+	</tr>
+	<tr> 
+    <td><span style='color:red;'>名称：</span></td>
+    <td>
+	<input id="d_name" name="d_name" type="text" size="40" value="{d_name}"><span id="d_name_ok"></span>
+	&nbsp;<span style='color:red;'>包名：</span><input id="d_packname" name="d_packname" type="text" size="40" value="{d_packname}">
+	&nbsp;<span style='color:red;'>版本：</span><input id="d_version" name="d_version" type="text" size="10" value="{d_version}">
+	&nbsp;字母：<input id="d_letter" name="d_letter" type="text" size="5" value="{d_letter}">
+	&nbsp;高亮：<input id="d_color" name="d_color" type="text" size="5" class="color" value="{d_color}" style="background-color:{d_color}">
+	</td>
+	</tr>
+	<tr> 
+	<td>拼音：</td>
+    <td>
+	<input id="d_enname" name="d_enname" type="text" size="40" value="{d_enname}">
+	&nbsp;备注：<input id="d_remarks" name="d_remarks" type="text" size="40" value="{d_remarks}">
+	&nbsp;<span style='color:red;'>大小：</span><input id="d_size" name="d_size" type="text" size="15" value="{d_size}">字节
+	&nbsp;&nbsp;<span style='color:red;'>扩展名：</span><input id="d_ext" name="d_ext" type="text" size="10" value="{d_ext}">
+	</td>
+	</tr>
+
+	<tr>
+	<td>TAG：</td>
+	<td>
+	<input id="d_tag" name="d_tag" type="text" size="94" value="{d_tag}">
+	&nbsp;<input type="checkbox" name="uptag" value="1" class="nst" checked>自动生成
+	</tr>
+	<tr> 
+    <td>图片：</td>
+    <td>
+    <input id="d_pic" name="d_pic" type="text" size="80" value="{d_pic}" onMouseOver="showpic(event,this.value);" onMouseOut="hiddenpic();"/>&nbsp;<iframe src="editor/uploadshow.php?action=game&id=d_pic&path=game" scrolling="no" topmargin="0" width="270" height="26" marginwidth="0" marginheight="0" frameborder="0" align="center"></iframe>(144*144)</td>
+	</tr>
+	<tr> 
+    <td>详图1：</td>
+    <td>
+    <input id="d_img1" name="d_img1" type="text" size="80" value="{d_img1}" onMouseOver="showpic(event,this.value);" onMouseOut="hiddenpic();"/>&nbsp;<iframe src="editor/uploadshow.php?action=game&id=d_img1&path=game" scrolling="no" topmargin="0" width="270" height="26" marginwidth="0" marginheight="0" frameborder="0" align="center"></iframe>(720*400)</td>
+	</tr>
+	<tr> 
+    <td>详图2：</td>
+    <td>
+    <input id="d_img2" name="d_img2" type="text" size="80" value="{d_img2}" onMouseOver="showpic(event,this.value);" onMouseOut="hiddenpic();"/>&nbsp;<iframe src="editor/uploadshow.php?action=game&id=d_img2&path=game" scrolling="no" topmargin="0" width="270" height="26" marginwidth="0" marginheight="0" frameborder="0" align="center"></iframe>(720*400)</td>
+	</tr>
+	<tr> 
+    <td>详图3：</td>
+    <td>
+    <input id="d_img3" name="d_img3" type="text" size="80" value="{d_img3}" onMouseOver="showpic(event,this.value);" onMouseOut="hiddenpic();"/>&nbsp;<iframe src="editor/uploadshow.php?action=game&id=d_img3&path=game" scrolling="no" topmargin="0" width="270" height="26" marginwidth="0" marginheight="0" frameborder="0" align="center"></iframe>(720*400)</td>
+	</tr>
+	<tr> 
+    <td>详图4：</td>
+    <td>
+    <input id="d_img4" name="d_img4" type="text" size="80" value="{d_img4}" onMouseOver="showpic(event,this.value);" onMouseOut="hiddenpic();"/>&nbsp;<iframe src="editor/uploadshow.php?action=game&id=d_img4&path=game" scrolling="no" topmargin="0" width="270" height="26" marginwidth="0" marginheight="0" frameborder="0" align="center"></iframe>(720*400)</td>
+	</tr>	
+	<tr>
+	<td>人气：</td>
+	<td>总：<input id="d_hits" name="d_hits" type="text" size="4" value="{d_hits}">
+	&nbsp;月：<input id="d_monthhits" name="d_monthhits" type="text" size="4" value="{d_monthhits}">
+	&nbsp;周：<input id="d_weekhits" name="d_weekhits" type="text" size="4" value="{d_weekhits}">
+	&nbsp;日：<input id="d_dayhits" name="d_dayhits" type="text" size="4" value="{d_dayhits}">
+	&nbsp;顶：<input id="d_up" name="d_up" type="text" size="4" value="{d_up}">
+	&nbsp;踩：<input id="d_down" name="d_down" type="text" size="4" value="{d_down}">
+	&nbsp;平均评分：<input id="d_score" name="d_score" type="text" size="5" value="{d_score}">
+	&nbsp;总评分：<input id="d_scoreall" name="d_scoreall" type="text" size="5" value="{d_scoreall}">
+	&nbsp;总评次：<input id="d_scorenum" name="d_scorenum" type="text" size="5" value="{d_scorenum}">
+	&nbsp;<input class="input" type="button" id="btnRndHits" value="随机" style="cursor:pointer;" />
+	</td>
+	</tr>
+	<tr>
+	<td>权限：</td>
+	<td>下载每集所需积分：<input id="d_stintdown" name="d_stintdown" type="text" size="8" value="{d_stintdown}">
+	&nbsp;可看会员组:
+	<select id="d_usergroup" name="d_usergroup">
+	<option value="0">请选择会员组</option>
+	<!-- BEGIN list_group -->
+	<option value="{v}" {c}>{n}</option>
+	<!-- END list_group -->
+	</select>
+	</td>
+	</tr>
+
+    <tbody id="downlist">
+    <!-- BEGIN list_down -->
+    <tr><td>&nbsp;下载地址{n}:</td><td>&nbsp;&nbsp;备注：<input id='downnote{n}' name='downnote[]' size='50' value='{downnote}'>&nbsp;&nbsp;操作：&nbsp;&nbsp;<a href="javascript:void(0)" onclick="clearSect('downurl{n}')">清空</a>&nbsp;&nbsp;<a href="javascript:void(0)" onclick="showUpload('downurl{n}')">上传</a>&nbsp;&nbsp;<br><br><textarea id='downurl{n}' name='downurl[]' style='width:100%;height:150px;'>{downurl}</textarea></td></tr>
+    <!-- END list_down -->
+    </tbody>
+   <tr>
+    <td>介绍：</td>
+    <td>
+		<textarea name="d_content" id="d_content" class="xheditor {tools:'BtnBr,Cut,Copy,Paste,Pastetext,Blocktag,Fontface,FontSize,Bold,Italic,Underline,Strikethrough,FontColor,BackColor,SelectAll,Removeformat,Align,List,Outdent,Indent,Link,Unlink,Img,Flash,Media,Table,Source,Fullscreen',width:'100%',height:'200',upBtnText:'上传',html5Upload:false,upMultiple:1,upLinkUrl:'{editorRoot}upload.php?action=xht&path=game',upImgUrl:'{editorRoot}upload.php?action=xht&path=game'}">{d_content}</textarea>
+	</td>
+	</tr>
+    <tr align="center">
+      <td colspan="2"><input class="input" type="submit" value="保存" id="btnSave"> <input class="input" type="button" value="返回" id="btnCancel"> </td>
+    </tr>
+</table>
+</form>
+<script>if($("#playlist").html() ==""){ appendart({playcount}) };</script>
+{foot}
+</body>
+</html>

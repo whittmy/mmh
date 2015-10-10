@@ -1,0 +1,192 @@
+﻿
+﻿<!DOCTYPE HTML>
+<html>
+<head>
+<meta charset="utf-8">
+<title>好看的{page:name}-最新{page:name}-经典{page:name}-{page:name}电影推荐-第{page:now}页-{maccms:name}</title>
+<meta content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no" id="viewport" name="viewport">
+<meta content="{page:key}" name="Description">
+<meta content="{page:des}" name="Keywords">
+<meta content="telephone=no" name="format-detection" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta content="{maccms:name}" name="apple-mobile-web-app-title">
+
+<script type="text/javascript" src="{maccms:path_tpl}js/home.js"></script> 
+
+ <link href="{maccms:path_tpl}css/global.css" rel="stylesheet" type="text/css">
+<!--判断跳转-->     
+ <script type="text/javascript">
+    var system = {
+        win: false,
+        mac: false,
+        xll: false
+    };
+    var p = navigator.platform;
+    system.win = p.indexOf("Win") == 0;
+    system.mac = p.indexOf("Mac") == 0;
+    system.x11 = (p == "X11") || (p.indexOf("Linux") == 0);
+    if (system.win || system.mac || system.xll) {
+	window.location.href = "http://www.molqq.com/";
+	} else {}
+</script>
+<!--判断跳转-->  
+<script type="text/javascript">uaredirect("{page:link}");</script>
+
+<link href="{page:link}" rel="canonical" />
+<link href="{maccms:path_tpl}css/list.css" rel="stylesheet" type="text/css">
+<link href="{maccms:path_tpl}css/vodlist.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<div class="wrapper"> 
+<div class="mask" id="mask_box"></div>
+	<header class="header clearfix">
+	<p class="headLeft"><a href="{maccms:path}" class="aLogo"></a></p>
+	<p class="headRight">
+	<a href="javascript:void(0);"  class="aSearch"><span>搜索</span></a>
+	<a href="/top.html" class="aRank"><span>榜单</span></a>
+	<a href="javascript:void(0);" target="_self" class="aUnLogin"><span id="unameHeader">历史</span></a>
+	</p>
+    	<section id="ls_box" class="searchMenu" style="display:none;">
+            <div class="hisBox fn-left">
+            <div class="looked-box" id="history">
+            </div>
+            </div>
+      	</section>
+	</header>
+	<nav class="subNav globalPadding" id="nav_menu" style="display:block">
+	<div class="con clearfix">
+	<p>
+	<a href="{maccms:path}" {if-A:{maccms:siteaid}=10}class="cur"{endif-A} target="_self">首页</a>
+	{maccms:menu type=1,2,3,4 order=asc table=vod}
+	<a href="[menu:link]" {if-A:{maccms:curvodtypeid}=[menu:id]}class="cur"{endif-A}{if-A:{maccms:curvodtypepid}=[menu:id]}class="cur"{endif-A} target="_self">[menu:name]</a>{/maccms:menu}
+	</p>
+	</div>
+	</nav>
+		<section id="search_box" class="searchMenu" style="display:none">
+              <form action="{maccms:link_search_vod}" method="post" >
+            <div class="searchFormCon globalPadding">
+            <p class="pSearchForm">
+            <input type="text" class="searchTxt searchTxtBlur" id="wd" name="wd" onblur="if(this.value==''){ this.value='100万部影片任你搜索';this.style.color='#cfcdcd';}" onfocus="if(this.value=='100万部影片任你搜索'){this.value='';this.style.color='';}" value="100万部影片任你搜索" /><input type="submit" value="" class="searchBtn"><i class="clearSearchBtn" style="display:none;"><em></em></i>
+            </p>
+            </div>
+            </form>        
+    <div class="search_hotkey">
+	{maccms:vod num=12 type=all order=desc by=dayhits}
+<a href="[vod:link]" title="[vod:name]" alt="[vod:name]">[vod:name]</a>
+ {/maccms:vod}
+    </div>     
+		</section> 
+    <nav class="subNav globalPadding index_menu_top" id="nav_menu" style="display:none;">
+    <div class="con clearfix">
+    <p>
+<a href="{maccms:path}" {if-A:{maccms:siteaid}=10}class="cur"{endif-A} target="_self">首页</a>
+	{maccms:menu type=1,2,3,4 order=asc table=vod}
+	<a href="[menu:link]" {if-A:{maccms:curvodtypeid}=[menu:id]}class="cur"{endif-A}{if-A:{maccms:curvodtypepid}=[menu:id]}class="cur"{endif-A} target="_self">[menu:name]</a>{/maccms:menu}
+    </p>
+    </div>
+    </nav>
+
+
+  <section class="main">
+    <div style="display:none;" id="actors" data-param="actor="></div>
+    <div class="tabCon">
+      <div class="tab globalPadding clearfix" id="tab" > <a href="javascript:void(0);" class="selectBtn ">分类<i class="moreArrowBtn"></i></a>
+        <p class="pList"> <a href="{page:link}" onClick="_dct_('m_dy_list_order_hot');" class="cur">最近更新</a> <a sign="no" href="{maccms:getlink top.html}">影院热映</a> 
+        </p>
+      </div>
+    </div>
+ <ul class="selectList" style="display:none;">        
+       <li id="first_list"><!--分类2-->
+        <div class="con" id="first_list_p">
+		</div>    
+       <a class="cur" href="javascript:void(0);">{page:name}索引</a>
+       <a href="{page:link}" class="f14">重置条件</a>
+	  </li>    
+      <li id="listtitle"><!--分类-->
+        <div class="con" id="firsts_list_p">
+          <p>
+          <a {if-A:"{page:pid}"="0"}class="cur"{endif-A}  target="_self" href="{page:linktype}" data="id-0">分类</a>
+		  {maccms:menu type=auto}
+		<a {if-A:"{page:id}"="[menu:id]"}class="cur"{endif-A}  href="[menu:link]" data="id-9">[menu:name]</a>
+		{/maccms:menu}
+		         </p>
+        </div>
+      </li>
+  
+ <li><!--类型-->
+  <div class="con" id="firsts_list_p">
+ <a  {if-A:"{page:class}"=""}class="cur"{endif-A}  href="{page:linkclass}" data="mcid-0">剧情</a> 
+ {maccms:class type=auto}
+ <a {if-A:"{page:class}"="[class:name]"}class="cur"{endif-A}  href="[class:link]" data='mcid-209'>[class:name]</a>
+  {/maccms:class}
+ 
+  </div>
+ 	   </li> 
+       <li id="second_list"><!--地区-->
+        <div class="con" id="second_list_p">
+          <p>
+          <a  {if-A:"{page:area}"=""}class="cur"{endif-A} href="{page:linkarea}" data="area-0">地区</a>
+		  {maccms:area type=auto order=asc}
+ <a {if-A:"{page:area}"="[area:name]"}class="cur"{endif-A} rel="nofollow" href="[area:link]"  data='area-[area:name]'>[area:name]</a>
+  {/maccms:area}
+         </p>
+        </div>
+      </li>
+       <li id="third_list"><!--年代-->
+        <div class="con"  id="third_list_p">
+          <p>
+         <a rel="nofollow"  {if-A:"{page:year}"=""}class="cur"{endif-A} href="{page:linkyear}" data="year-0">年代</a>
+		 {maccms:year type=auto start=2002 end=2014 order=desc}
+ <a rel="nofollow" {if-A:"{page:year}"="[year:name]"}class="cur"{endif-A} href="[year:link]"  data='year-[year:name]'>[year:name]</a>
+  {/maccms:year}
+          </p>
+         </div>
+      </li>
+     </ul>
+   <!-- // filter-focus end -->
+     <!-- filter-focus end -->
+      <div class="ui-bar fn-clear" style="height:45px; margin-bottom:10px;">
+        <!-- view-mode end -->
+        <div class="view-filter"> 
+<a rel="nofollow" href="{page:linkbytime}" class='{if-A:"{page:by}"="time"}current{endif-A} order' data="order-addtime"><span>时间</span></a><em>|</em>
+<a rel="nofollow" href="{page:linkbyhits}" class='{if-A:"{page:by}"="hits"}current{endif-A} order' data="order-hits"><span>按人气</span></a><em>|</em>
+<a rel="nofollow" href="{page:linkbyscore}" class='{if-A:"{page:by}"="score"}current{endif-A} order' data="order-gold"><span>按评分</span></a>
+</div>
+        <!-- view-filter end -->
+        <div class="ui-pages  fn-right" id="short-page"> </div>
+      </div>
+      <!-- // ui-bar end -->
+<div class="globalPadding">
+<ul class="picTxt picTxtA clearfix" id="data_list">
+{maccms:vod pagesize=24 order=desc by=time}
+     <li>
+          <div class="con"> 
+          <a href="[vod:link]"> <img  data-src="[vod:pic]" src="{maccms:path}images/blank.png" alt="[vod:name]" ><span class="sNum"><em class="emScore">[vod:score]</em>分</span> <span class="sTit">[vod:name]</span> </a> 
+          </div>
+        </li>
+		{/maccms:vod}
+		       </ul>
+	</div>
+        <div class="ui-bar list-page fn-clear">
+        <div class="ui-page-big ui-pages" id="long-page">
+		{maccms:pages}
+      	</div>
+</div>
+    <!-- // tbmov-box end -->
+   </section>
+     <footer class="footer">
+    <p class="pLinks"><a href="{maccms:path}" onclick="_dct_('m_gongyong_pc');">影视首页</a>|<a href="#">用户反馈</a>|<a href="javascript:scroll(0,0)" target="_self">返回顶部</a></p>
+    <p class="copyRight">Copyright © {maccms:name} <script src="http://s4.cnzz.com/stat.php?id=1253342745&web_id=1253342745" language="JavaScript"></script>
+</p>
+  </footer>
+</div>
+<script type="text/javascript" src="{maccms:path_tpl}js/zepto.js"></script> 
+<script type="text/javascript" src="{maccms:path_tpl}js/jquery.lazyload.min.js"></script> 
+<script type="text/javascript" src="{maccms:path_tpl}js/jquery.cookie.min.js"></script> 
+<script type="text/javascript" src="{maccms:path_tpl}js/md5.min.js"></script> 
+<script type="text/javascript" src="{maccms:path_tpl}js/iscroll.js"></script> 
+<script type="text/javascript" charset="gbk2312" src="{maccms:path_tpl}js/list.min.js"></script>
+<script type="text/javascript" src="{maccms:path_tpl}js/common.min.js"></script> 
+ </body>
+</html>
