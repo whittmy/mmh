@@ -13,7 +13,7 @@ if(!file_exists($fpah)){ mkdir($fpah); }
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=7" />
-<title>附件上传 - 苹果CMS</title>
+<title>附件上传 - 萌系管理系统</title>
 <link rel="stylesheet" type="text/css" href="../tpl/images/style.css" />
 <link rel="stylesheet" type="text/css" href="../../images/jq/jquery.uploadify.css" />
 <script type="text/javascript" src="http://libs.useso.com/js/jquery/1.7.1/jquery.min.js"></script>

@@ -51,8 +51,13 @@ elseif($method=='logout')
 
 elseif($method=='index'){
 	$plt->set_file('main', $ac.'_'.$method.'.html');
+
+    //这部分主要设置界面左侧‘动态扩展’部分的条目, 而且是根据 quickmenu.txt的设定。
+    //!!!!!! 至于页面显示，由 admin_index.html & quickmenu.js & init.js 几个文件指定页面中‘相对固定’的模块，如右侧顶部的导航栏(首页、视频等)。!!!!
+    // 问题：下面的快捷菜单为什么是粘在‘首页’标签，而在其它标签时不会显示？？？ 原因如下：
+    //      admin_index.html做为"模板",其中包含了 menu.ma.children['{quickid}'] = { "text":"{quickname}","url":"{quickurl}" }; 而下面的代码就是处理该句的。
+    //      再对照 quickmenu.js中， menu.am 即为 ‘首页’，也就是我们替换模板内容后，这些更新的值会加到 menu.am即首页中
 	$plt->set_block('main', 'list_quickmenu', 'rows_quickmenu');
-	
 	$path = 'tpl/config/quickmenu.txt';
 	if(file_exists($path)){
 		$fc = file_get_contents($path);

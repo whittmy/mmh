@@ -34,7 +34,7 @@ elseif($method=='list')
 	echoPageCache($tpl->P['cp'],$tpl->P['cn']);
 	$tpl->P['vodtypeid'] = $tpl->P['id'];
 	
-	$tpl->T = $MAC_CACHE['vodtype'][$tpl->P['vodtypeid']];
+	$tpl->T = $MAC_CACHE['vodcata'][$tpl->P['vodtypeid']];
 	if(!is_array($tpl->T)){ showMsg("获取数据失败，请勿非法传递参数","../"); }
 	$db = new AppDb($MAC['db']['server'],$MAC['db']['user'],$MAC['db']['pass'],$MAC['db']['name']);
 	if(!getUserPopedom($tpl->P['id'], 'list')){ showMsg('您没有权限浏览此列表页', '../user/'); }
@@ -48,11 +48,11 @@ elseif($method=='list')
 elseif($method=='type')
 {
 	$tpl->P["siteaid"] = 12;
-    $tpl->P['cp'] = 'vodtype';
+    $tpl->P['cp'] = 'vodcata';
 	$tpl->P['cn'] = $tpl->P['id'].'-'.$tpl->P['pg'] ;
 	echoPageCache($tpl->P['cp'],$tpl->P['cn']);
 	$tpl->P['vodtypeid'] = $tpl->P['id'];
-	$tpl->T = $MAC_CACHE['vodtype'][$tpl->P['vodtypeid']];
+	$tpl->T = $MAC_CACHE['vodcata'][$tpl->P['vodtypeid']];
 	if(!is_array($tpl->T)){ showMsg("获取数据失败，请勿非法传递参数","../"); }
 	$db = new AppDb($MAC['db']['server'],$MAC['db']['user'],$MAC['db']['pass'],$MAC['db']['name']);
 	if(!getUserPopedom($tpl->P['id'], 'list')){ showMsg('您没有权限浏览此列表页', '../user/'); }
@@ -168,7 +168,7 @@ elseif($method=='search')
 	
     $tpl->P['typepid'] = 0;
 	if(!isN($tpl->P["typeid"])){
-		$typearr = $MAC_CACHE['vodtype'][$tpl->P['typeid']];
+		$typearr = $MAC_CACHE['vodcata'][$tpl->P['typeid']];
 		if (is_array($typearr)){
 			$tpl->P['typepid'] = $typearr['t_pid'];
 			if (isN($tpl->P["key"])){ $tpl->P["key"]= $typearr["t_name"];  }
@@ -226,7 +226,7 @@ elseif($method=='detail')
 	$row = $db->getRow($sql);
 	if(!$row){ showMsg("获取数据失败，请勿非法传递参数",MAC_PATH); }
 	if(!getUserPopedom($row["d_type"], "vod")){ showMsg ("您没有权限浏览内容页", MAC_PATH."index.php?m=user-index.html"); }
-	$tpl->T = $MAC_CACHE['vodtype'][$row['d_type']];
+	$tpl->T = $MAC_CACHE['vodcata'][$row['d_type']];
 	$tpl->D = $row;
 	unset($row);
 	$tpl->loadvod("detail");
@@ -281,7 +281,7 @@ elseif($method=='play')
 		}
 		unset($rowu);
 	}
-	$tpl->T = $MAC_CACHE['vodtype'][$row['d_type']];
+	$tpl->T = $MAC_CACHE['vodcata'][$row['d_type']];
 	$tpl->D = $row;
 	unset($row);
 	$tpl->loadvod('play');
@@ -339,7 +339,7 @@ elseif($method=='down')
 		}
 		unset($rowu);
 	}
-	$tpl->T = $MAC_CACHE['vodtype'][$row['d_type']];
+	$tpl->T = $MAC_CACHE['vodcata'][$row['d_type']];
 	$tpl->D = $row;
 	unset($row);
 	$tpl->loadvod ("down");

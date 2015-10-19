@@ -1,9 +1,14 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
+<!------------
+    重点： 选择器的使用
+    $("#name")
+
+------------------>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=7" />
-<title>视频管理 - 苹果CMS</title>
+<title>资源管理 - 苹果CMS</title>
 <link rel="stylesheet" type="text/css" href="tpl/images/style.css" />
 <link rel="stylesheet" type="text/css" href="../images/jq/jquery.webox.css" />
 <script type="text/javascript" src="../js/jquery.js"></script>
@@ -13,6 +18,10 @@
 <script type="text/javascript" src="tpl/js/adm.js"></script>
 <style>select{width:110px; }</style>
 <script language="javascript">
+    function search(){
+        location.href=getPar().replace('{ac}','list');
+    }
+
 $(function(){
 	$("#btnDel").click(function(){
 		if(confirm('确定要删除吗')){
@@ -53,15 +62,31 @@ $(function(){
 		if (repeatlen >50){ alert("长度最大50");$("#repeatlen").focus();return;}
 		location.href='?m=vod-list-repeat-ok-repeatlen-'+repeatlen;;
 	});
-	$("#btnSearch").click(function(){
-		location.href=getPar().replace('{ac}','list');
-	});
+	$("#btnSearch").click(search);
+    $("#btnRest").click(function () {
+        //重设过滤器
+        $("#pid").get(0).selectedIndex=0;
+        $("#topic").get(0).selectedIndex=0;
+        $("#state").get(0).selectedIndex=0;
+        $("#area").get(0).selectedIndex=0;
+        $("#lang").get(0).selectedIndex=0;
+        $("#server").get(0).selectedIndex=0;
+        $("#play").get(0).selectedIndex=0;
+        $("#down").get(0).selectedIndex=0;
+        $("#pic").get(0).selectedIndex=0;
+        $("#by").get(0).selectedIndex=0;
+        $("#level").get(0).selectedIndex=0;
+        $("#hide").get(0).selectedIndex=0;
+        $("#lock").get(0).selectedIndex=0;
+        $("#wd").val("可搜索(资源名称)");   //val既可以设置，又可以获取
+
+    });
 	$("#btnBatch").click(function(){
 		$.webox({
 			width:400,
 			height:350,
 			bgvisibel:true,
-			title:'批量操作  筛选参数请在背后的视频管理界面选择...',
+			title:'批量操作  筛选参数请在背后的资源管理界面选择...',
 			html:$("#win2").html()
 		});
 	});
@@ -81,7 +106,11 @@ $(function(){
 	$("#pic_fwdate").val(today);
 });
 function getPar(){
-	return '?m=vod-{ac}-type-'+$("#type").val()+'-topic-'+$("#topic").val()+'-level-'+$("#level").val()+'-hide-'+$("#hide").val()+'-lock-'+$("#lock").val()+'-by-'+$("#by").val()+'-wd-'+encodeURI($("#wd").val())+'-state-'+$("#state").val()+'-pic-'+$("#pic").val()+'-play-'+$("#play").val()+'-down-'+$("#down").val()+'-server-'+$("#server").val()+'-area-'+encodeURI($("#area").val())+'-lang-'+encodeURI($("#lang").val());
+    //替换掉 字符中出现的 undefined(类型)，以免修改中有些字段我们未定义导致其传递到php是获取的值不正确。
+    //例如发现 type未定义，'-type-undefined-', 传到php后，得到数字0，导致我后面的判断有问题。
+    str = '?m=vod-{ac}-type-'+$("#type").val()+'-pid-'+$("#pid").val()+'-topic-'+$("#topic").val()+'-level-'+$("#level").val()+'-hide-'+$("#hide").val()+'-lock-'+$("#lock").val()+'-by-'+$("#by").val()+'-wd-'+encodeURI($("#wd").val())+'-state-'+$("#state").val()+'-pic-'+$("#pic").val()+'-play-'+$("#play").val()+'-down-'+$("#down").val()+'-server-'+$("#server").val()+'-area-'+encodeURI($("#area").val())+'-lang-'+encodeURI($("#lang").val());
+    str = str.replace('undefined', '');
+	return str;
 }
 function batchDel(){
 	if(confirm("此操作不可逆，确认执行吗？")){
@@ -105,7 +134,7 @@ function batchSet(){
 <body>
 <table class="tbinfo pleft">
 	<thead>
-		<tr><th><span style="float:left">视频管理</span><span style="float:right;">【<a id="syncpic" href="###"><font color="red"><strong>同步下载远程图片</strong></font></a>】</span> </th></tr>
+		<tr><th><span style="float:left">资源管理</span><span style="float:right;">【<a id="syncpic" href="###"><font color="red"><strong>同步下载远程图片</strong></font></a>】</span> </th></tr>
 	</thead>
 	<!-- IF isrepeat -->
 	<tr>
@@ -119,99 +148,107 @@ function batchSet(){
 	<!-- ELSE isrepeat -->
 	    <tr>
 	<td class="hl" colspan="2">
-	过滤条件：<select id="type" name="stype">
-	<option value="">视频分类</option>
-	<!-- BEGIN list_type -->
+	过滤条件：<select id="pid" name="pid">
+	<option value="">资源分类</option>
+	<!-- BEGIN list_pid -->
 	<option value="{v}" {c}>{n}</option>
-	<!-- END list_type -->
+	<!-- END list_pid -->
 	</select>
+    &nbsp;
+    <select id="type" name="type">
+    <option value="">资源类型</option>
+    <!-- BEGIN list_type -->
+    <option value="{v}" {c}>{n}</option>
+    <!-- END list_type -->
+    </select>
 	&nbsp;
 	<select id="topic" name="topic">
-	<option value="">视频专题</option>
+	<option value="">资源专题</option>
 	<!-- BEGIN list_topic -->
 	<option value="{v}" {c}>{n}</option>
 	<!-- END list_topic -->
 	</select>
 	&nbsp;
 	<select id="state" name="state">
-	<option value="">视频连载</option>
+	<option value="">资源连载</option>
 	<!-- BEGIN list_state -->
 	<option value="{v}" {c}>{n}</option>
 	<!-- END list_state -->
 	</select>
 	&nbsp;
 	<select id="area" name="area">
-	<option value="">视频地区</option>
+	<option value="">资源地区</option>
 	<!-- BEGIN list_area -->
 	<option value="{v}" {c}>{n}</option>
 	<!-- END list_area -->
     </select>
 	&nbsp;
     <select id="lang" name="lang">
-    <option value="">视频语言</option>
+    <option value="">资源语言</option>
     <!-- BEGIN list_lang -->
 	<option value="{v}" {c}>{n}</option>
 	<!-- END list_lang -->
 	</select>
 	&nbsp;
 	<select id="server" name="server">
-	<option value="">视频服务器组</option>
+	<option value="">资源服务器组</option>
 	<!-- BEGIN list_server -->
 	<option value="{v}" {c}>{n}</option>
 	<!-- END list_server -->
 	</select>
 	&nbsp;
 	<select id="play" name="play">
-	<option value="">视频播放器</option>
+	<option value="">资源播放器</option>
 	<!-- BEGIN list_play -->
 	<option value="{v}" {c}>{n}</option>
 	<!-- END list_play -->
 	</select>
 	&nbsp;
 	<select id="down" name="down">
-	<option value="">视频下载器</option>
+	<option value="">资源下载器</option>
 	<!-- BEGIN list_down -->
 	<option value="{v}" {c}>{n}</option>
 	<!-- END list_down -->
 	</select><br>
 	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 	<select id="pic" name="pic">
-	<option value="">视频图片</option>
+	<option value="">资源图片</option>
 	<!-- BEGIN list_pic -->
 	<option value="{v}" {c}>{n}</option>
 	<!-- END list_pic -->
 	</select>
 	&nbsp;
 	<select id="by" name="by">
-	<option value="">视频排序</option>
+	<option value="">资源排序</option>
 	<!-- BEGIN list_by -->
 	<option value="{v}" {c}>{n}</option>
 	<!-- END list_by -->
 	</select>
 	&nbsp;
 	<select id="level" name="level">
-	<option value="">视频推荐</option>
+	<option value="">资源推荐</option>
 	<!-- BEGIN list_level -->
 	<option value="{v}" {c}>{n}</option>
 	<!-- END list_level -->
 	</select>
 	&nbsp;
 	<select id="hide" name="hide">
-	<option value="">视频显隐</option>
+	<option value="">资源显隐</option>
 	<!-- BEGIN list_hide -->
 	<option value="{v}" {c}>{n}</option>
 	<!-- END list_hide -->
 	</select>
 	&nbsp;
 	<select id="lock" name="lock">
-	<option value="">视频锁定</option>
+	<option value="">资源锁定</option>
 	<!-- BEGIN list_lock -->
 	<option value="{v}" {c}>{n}</option>
 	<!-- END list_lock -->
 	</select>
-	&nbsp;关键字：<input id="wd" size="40" name="wd" value="{wd}" onClick="this.select();">
+	&nbsp;关键字：<input id="wd" size="40" name="wd" value="{wd}" onClick="this.select();" onkeypress="if(event.keyCode==13){ /*window.alert('回车触发事件，处理事情');*/search(); return false;}" >
 	<input class="input" type="button" value="搜索" id="btnSearch">
-	<input class="input" type="button" value="批量操作" id="btnBatch">
+    <input class="input" type="button" value="重设" id="btnRest">
+	<input class="input" type="button" value="批量操作(全部)" id="btnBatch">
 	</td>
 	</tr>
 	<!-- ENDIF isrepeat -->
@@ -219,16 +256,18 @@ function batchSet(){
 
 <form method="post" action="" name="form1" id="form1">
 <table class="tb">
+    <!--- style.css中设定了 tb th的默认文本 居左，我需要对下面进行针对性调整  -->
 	<tr>
 	<th width="60" class="thfirst">编号</th>
-	<th>名称</th>
-	<th width="80">分类</th>
-	<th width="80">人气</th>
-	<th width="80">来源</th>
-	<th width="60">推荐</th>
-	<th width="60">浏览</th>
-	<th width="150">更新时间</th>
-	<th width="100">操作</th>
+	<th>名称  (包含 [标题][隐藏][锁定][连载状态][备注])</th>
+    <th width="80" style="text-align:center">类型</th>
+	<th width="140">分类</th>
+	<th  width="80" style="text-align:center">人气</th>
+	<th width="100"  >来源</th>
+	<th width="40" style="text-align:center">推荐</th>
+	<th width="40" style="text-align:center">浏览</th>
+	<th width="135" style="text-align:center">更新时间</th>
+	<th width="100" style="text-align:center">操作</th>
 	</tr>
 	<!-- IF isnull -->
 	<tr><td colspan="9" align="center">未查询到任何数据</td></tr>
@@ -236,14 +275,15 @@ function batchSet(){
 	<!-- BEGIN list_vod -->
 	<tr>
 	<td><input name="d_id[]" type="checkbox" id="d_id" value="{d_id}" />{d_id}</td>
-	<td><a target="_blank" href="{d_link}">{d_name}</a> {d_hide} {d_lock}&nbsp;&nbsp; {d_state}&nbsp;&nbsp;{d_remarks}</td>
-	<td>{d_type}</td>
-	<td>{d_hits}</td>
+	<td><a target="_blank" href="{d_link}" >{d_name}</a> {d_hide} {d_lock}&nbsp;&nbsp; {d_state}&nbsp;&nbsp;{d_remarks}</td>
+    <td align="center">{d_type}</td>
+    <td title="{d_pids}">{d_pids}</td>
+	<td align="center">{d_hits}</td>
 	<td title="{d_playfrom}" style= "white-space:nowrap;overflow:hidden;">{d_playfrom}</td>
-	<td id="level_{d_id}">&nbsp;<img src="../images/icons/ico{d_level}.gif" border="0" style="cursor: pointer;" onclick="ajaxshow('level_{d_id}','level','vod','d_id','d_level','{d_id}')" /></td>
-	<td><!-- IF ismake --><a href="?m=make-info-tab-vod-no-{d_id}"><img src="../images/icons/html_no.gif"></a><!-- ELSE ismake --><a target="_blank" href="{d_link}"><img src="../images/icons/html_ok.gif"></a><!-- ENDIF ismake --></td>
-	<td>{d_time}</td>
-	<td>
+	<td  align="center" id="level_{d_id}">&nbsp;<img src="../images/icons/ico{d_level}.gif" border="0" style="cursor: pointer;" onclick="ajaxshow('level_{d_id}','level','vod','d_id','d_level','{d_id}')" /></td>
+	<td  align="center"><!-- IF ismake --><a href="?m=make-info-tab-vod-no-{d_id}"><img src="../images/icons/html_no.gif"></a><!-- ELSE ismake --><a target="_blank" href="{d_link}"><img src="../images/icons/html_ok.gif"></a><!-- ENDIF ismake --></td>
+	<td  align="center">{d_time}</td>
+	<td align="center">
 	<a href="?m=vod-info-id-{d_id}">修改</a> |
 	<a href="admin_data.php?ac=del&tab=vod&d_id={d_id}" onClick="return confirm('确定要删除吗?');">删除</a>
 	</td>
@@ -271,7 +311,7 @@ function batchSet(){
 <table class="tbinfo pleft">
 	<tr>
 	<td width="100" class="hl">同步范围：</td>
-	<td class="hl"> 全部<input type="radio" id="pic_fw1" name="pic_fw" value="1" checked> 视频日期<input type="radio" id="pic_fw2" name="pic_fw" value="2" > <input id="pic_fwdate" name="pic_fwdate" class="datepicker"/> 
+	<td class="hl"> 全部<input type="radio" id="pic_fw1" name="pic_fw" value="1" checked> 资源日期<input type="radio" id="pic_fw2" name="pic_fw" value="2" > <input id="pic_fwdate" name="pic_fwdate" class="datepicker"  value="1700-10-1" onfocus="javascript:if(this.value=='1700-10-1')this.value='';"/>
 	</td>
 	</tr>
 	<tr>

@@ -14,7 +14,7 @@ if($method=='option')
 		array_push($vodtopicarrn,'&nbsp;|—'.$arr['t_name']);
 		array_push($vodtopicarrv,$arr['t_id']);
 	}
-	$vodtypearr = $MAC_CACHE['vodtype'];
+	$vodtypearr = $MAC_CACHE['vodcata'];
 	$vodtypearrn = array();
 	$vodtypearrv = array();
 		foreach($vodtypearr as $arr1){
@@ -75,7 +75,7 @@ if($method=='option')
 	
 	$arr=array(
 		array('a'=>'vodtopic','c'=>'','n'=>$vodtopicarrn,'v'=>$vodtopicarrv),
-		array('a'=>'vodtype','c'=>'','n'=>$vodtypearrn,'v'=>$vodtypearrv),
+		array('a'=>'vodcata','c'=>'','n'=>$vodtypearrn,'v'=>$vodtypearrv),
 		array('a'=>'arttopic','c'=>'','n'=>$arttopicarrn,'v'=>$arttopicarrv),
 		array('a'=>'arttype','c'=>'','n'=>$arttypearrn,'v'=>$arttypearrv),
 		array('a'=>'label','c'=>'','n'=>$labelarr,'v'=>$labelarr)

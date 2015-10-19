@@ -612,7 +612,7 @@ else
 	
 	if($method=='popedom'){
 		$plt->set_block( "main", "row", "rows" );
-		$typearr = $GLOBALS['MAC_CACHE']['vodtype'];
+		$typearr = $GLOBALS['MAC_CACHE']['vodcata'];
 		foreach( $typearr as $a ) {
 	    	$plt->set_var( 't_name', $a['t_name'] );
 	    	$ck1 = getUserPopedom( $a["t_id"],"list") ==true ? "ok.png" : "cancel.png";
@@ -687,7 +687,7 @@ else
 			{
 				$num++;
 				
-				$typearr =  $GLOBALS['MAC_CACHE']['vodtype'][$row['d_type']];
+				$typearr =  $GLOBALS['MAC_CACHE']['vodcata'][$row['d_type']];
 				if ($MAC['vod']['playtype']==0){
 				 	$alink = "../".$tpl->getLink('vod','detail',$typearr,$row);
 					$alink = str_replace("../".MAC_PATH,"../",$alink);

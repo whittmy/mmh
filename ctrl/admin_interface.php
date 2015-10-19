@@ -16,7 +16,7 @@ function gettypere($flag,$tn)
     	$file = "../inc/config/interface_gametype.txt";
 	}
 	else{
-		$typearr = $GLOBALS['MAC_CACHE']['vodtype'];
+		$typearr = $GLOBALS['MAC_CACHE']['vodcata'];
 		$file = "../inc/config/interface_vodtype.txt";
 	}
     
@@ -188,7 +188,7 @@ if($ac=='vod')
     	$arr=explode(',',$d_class);
     	$d_class='';
     	$rc=false;
-    	$c_pid = $MAC_CACHE['vodtype'][$d_type]['t_pid'];
+    	$c_pid = $MAC_CACHE['vodcata'][$d_type]['t_pid'];
     	if($c_pid==0){ $c_pid=$d_type; }
     	
     	foreach($arr as $a){

@@ -59,7 +59,7 @@ if($ac=='videolist')
 			$tempurl = urlDeal($row["d_playurl"],$row["d_playfrom"]);
 		    if (strpos(",".$row["d_pic"],"http://")>0) { $temppic = $row["d_pic"]; } else { $temppic = $MAC['api']['vod']['imgurl'] . $row["d_pic"]; }
 		    
-		    $typearr =  $MAC_CACHE['vodtype'][$row["d_type"]];
+		    $typearr =  $MAC_CACHE['vodcata'][$row["d_type"]];
 		    $xml .= "<video>";
 		    $xml .= "<last>". date('Y-m-d H:i:s',$row["d_time"]) ."</last>";
 			$xml .= "<id>".$row["d_id"]."</id>";
@@ -126,7 +126,7 @@ else
 		
 		while ($row = $db ->fetch_array($rs))
 	  	{
-	  		$typearr = $MAC_CACHE['vodtype'][$row["d_type"]];
+	  		$typearr = $MAC_CACHE['vodcata'][$row["d_type"]];
 			$xml .= "<video>";
 			$xml .= "<last>".date('Y-m-d H:i:s',$row["d_time"])."</last>";
 			$xml .= "<id>".$row["d_id"]."</id>";
@@ -144,7 +144,7 @@ else
 	
 	//分类列表开始
 	$xml .= "<class>";
-	$sql = "select * from {pre}vod_type where 1=1 ";
+	$sql = "select * from {pre}vod_cata where 1=1 ";
 	if ($MAC['api']['vod']['typefilter'] != "") { $sql .= $MAC['api']['vod']['typefilter'] ; }
 	$rs = $db->query($sql);
 	while ($row = $db ->fetch_array($rs))

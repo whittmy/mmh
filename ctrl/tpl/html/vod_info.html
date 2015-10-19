@@ -16,14 +16,16 @@
 <script language="javascript" src="editor/xheditor_lang/zh-cn.js"></script>
 <script language="javascript">
 $(function(){
+    //提交时限定 xx必须填写
 	$("#form1").validate({
 		rules:{
 			d_name:{
 				required:true
-			},
-			d_type:{
-				required:true
 			}
+//            ,
+//			d_type:{
+//				required:true
+//			}
 		}
 	});
 	$("#btnRndHits").click(function(){
@@ -45,6 +47,10 @@ $(function(){
 	});
 });
 
+/**
+ * json 的删除注意：
+    splice(index,howmany)  删除指定index开始的howmany个元素，该方法会维护length值
+ */
 var d_class='';
 
 function getClass(id,sclass)
@@ -68,6 +74,95 @@ function getClass(id,sclass)
 		});
 	}
 }
+
+//删除item
+function delPid(id){
+   // alert(id);
+    if(id != ""){
+        if(_pidsData.length>0) {
+            $.each(_pidsData, function (i, row) {
+                if (row.id == id) {
+                    console.log("delete:"+row.name);
+                    //delete _pidsData[i];  //注意： 删除后长度却不会被改变，
+                    _pidsData.splice(i, 1); //这个没有问题
+                    return false; //相当于 break
+                }
+            });
+        }
+        updatePids();
+    }
+}
+
+//id 为分类对应的数据库id编号
+//当添加一个后，变生成一个新的复选框分类
+function addPid(id, name){
+    if(id != "" && name!="") {
+        var p = name.indexOf("—");
+        if(p != -1)
+            name = name.substr(p+1);
+
+        //alert(id + ","+  name); //
+        if(_pidsData.length>0){
+            hadexist = false;
+            $.each(_pidsData, function(i,row){
+                console.log("i="+i+":"+row.id+","+id);
+                if(row.id == id){
+                    console.log(id+ " had exist");
+                    hadexist = true;
+                    return false; //相当于 break;   return true==continue
+                }
+            });
+
+            //已存在,则忽略
+            if(hadexist){
+                updatePids();
+                return;
+            }
+        }
+        console.log('begin to add item');
+        // json对象添加元素
+        item = {"id":id, "name":name, "chk":'true'};
+        _pidsData.push(item);
+
+        updatePids();
+    }
+}
+/*
+    based on _pidsData
+ */
+function updatePids(){
+    $("#div_pids").html('');
+    //console.log("length:"+_pidsData.length);
+    if(_pidsData.length>0){
+        //console.log(_pidsData);
+        $.each(_pidsData, function(i,row){
+            chk =  row.chk=='true' ? 'checked' : '';
+            $("#div_pids").append('<input type="checkbox" name="d_pids[]" value="'+row.id+'" '+chk+' onclick="delPid(this.value)" />' +'<font color="#FF0000">'+row.name+'</font>');
+        });
+    }
+    //设置select 选中的索引：
+    //即 重设状态
+    $("#d_pids").get(0).selectedIndex=0;
+}
+
+var _pidsData; //存储当前的影片所属的分类信息(json对象)
+
+function getPids(id, pids){ //
+    if(id!=""){
+        $.ajax({
+            type: 'get',
+            cache: false,
+            dataType: 'json',
+            url: "admin_data.php?ac=getpids&id="+id+'&pids='+pids,
+            timeout: 3000,
+            success:function(r){
+                _pidsData = r;
+                updatePids();
+            }
+        });
+    }
+}
+
 function showUpload(n){
 	$.webox({
 		width:400,
@@ -81,7 +176,7 @@ function showUpload(n){
 </head>
 <body>
 <div id="showpic" style="display:none;"><img name="showpic_img" id="showpic_img" width="120" height="160"></div>
-<form action="admin_data.php?ac=save&tab=vod" method="post" name="form1" id="form1">
+<form action="admin_data.php?ac=save&tab=vod&tb_cls=vod_r_type_dir" method="post" name="form1" id="form1">
 <input id="d_id" name="d_id" type="hidden" value="{d_id}">
 <input name="d_addtime" type="hidden" value="{d_addtime}">
 <input name="d_time" type="hidden" value="{d_time}">
@@ -89,16 +184,37 @@ function showUpload(n){
 <input id="backurl" name="backurl" type="hidden" value="{backurl}">
 <div class="toptit">视频信息</div>
 <table class="tbinfo pleft">
+    <tr>
+        <td>ID值：</td>
+        <td>&nbsp;{d_id}</td>
+    </tr>
+    <tr>
+        <!--  注意： 代表分类信息的列d_type，变更为现在的 d_pids(字符串组合)， d_type的作用暂未定  --->
+    <td width="100" class="h1">所属分类：</td>
+    <td>
+        <div id="div_pids" ></div>
+        <script type="text/javascript">getPids('{d_id}', '{d_pids}')</script> <!-- d_pids为 vod表中纪录的该条目所属分类-->
+        <select id="d_pids"  onchange="addPid(this.options[this.options.selectedIndex].value,this.options[this.options.selectedIndex].text);" >
+            <option value="">请选择分类</option>
+            <!-- BEGIN list_type -->
+            <option value="{v}" {c}>{n}</option>
+            <!-- END list_type -->
+        </select>
+    </td>
+    </tr>
+
 	<tr>
 	<td width="100" class="hl">参数：</td>
 	<td class="hl">
+        <!--
 	<select id="d_type" name="d_type"  onchange="getClass(this.options[this.options.selectedIndex].value,'');" >
 	<option value="">请选择分类</option>
-	<!-- BEGIN list_type -->
+	 BEGIN list_type
 	<option value="{v}" {c}>{n}</option>
-	<!-- END list_type -->
-	</select>
-	&nbsp;<select id="d_level" name="d_level" >
+	 END list_type
+	</select> 	&nbsp;-->
+
+    <select id="d_level" name="d_level" >
 	<option value="">选择推荐值</option>
 	<!-- BEGIN list_level -->
 	<option value="{v}" {c}>{n}</option>
@@ -126,20 +242,26 @@ function showUpload(n){
 	&nbsp;<input type="checkbox" name="d_lock" value="1" class="nst" title="锁定后采集不更新" <!-- IF islock --> checked <!-- ENDIF islock -->>锁定
 	</td>
 	</tr>
-	<!-- IF isexpandtype -->
-	<tr> 
-    <td>扩展多分类：</td>
-    <td>
-	<div id="div_expandtype" ></div><script type="text/javascript">getExpandType('{d_type}','{d_type_expand}')</script>
-	</td>
-	</tr>
-	<!-- ENDIF isexpandtype -->
+
+    <!--- 配置文件里有控制这一项的，我们默认将其关闭-->
+    <!-- IF isexpandtype -->
+    <tr>
+        <td>扩展多分类：</td>
+        <td>
+            <div id="div_expandtype" ></div><script type="text/javascript">getExpandType('{d_type}','{d_type_expand}')</script>
+        </td>
+    </tr>
+    <!-- ENDIF isexpandtype -->
+
+    <!------- 屏蔽剧情
 	<tr> 
     <td>剧情分类：</td>
     <td>
 	<div id="div_class" ></div><script type="text/javascript">getClass('{d_type}','{d_class}')</script>
 	</td>
 	</tr>
+    ---->
+
 	<tr> 
     <td>名称：</td>
     <td>
@@ -213,6 +335,25 @@ function showUpload(n){
 	</select>
 	</td>
 	</tr>
+
+    <!--
+        若 nanme的值以'[]'结尾，则其代表数组，表单处理时的数据传递方式为数组
+    --->
+    <tbody id="ep_title">
+    <tr><td>&nbsp;分集标题&图片:</td>
+        <td>
+            <textarea id='epname' name='epname' style='width:25%;height:150px;'>{epname}</textarea>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <textarea id='eppic' name='eppic' style='width:60%;height:150px;'>{eppic}</textarea>
+        </td>
+    </td></tr>
+    </tbody>
+
+    <!--  关于下面部分的显示控制，
+        vod.php部分 通过 $rn='play'; $plt->set_block('main', 'list_'.$rn, 'rows_'.$rn);  默认没有数据时调用 $plt->set_var('rows_'.$rn,''); 来控制该网页模板的下面注释部分的内容被设置为空。
+        点击添加按钮时，会调用 adm.js中的appendplay函数，来添加播放信息相关的数据：$("#playlist").append(area);，会将 下来列表中的数据传递到appendplay函数中
+        传入函数的相关参数为： 模板被解析时被php设置的值，{select_play}以及{select_server}，查阅对应php文件(vod.php)可以看到 makeSelectXml来获取相关文件。
+     -->
 	<tbody id="playlist">
 	<!-- BEGIN list_play -->
 	<tr><td>&nbsp;播放地址{n}:</td><td><input id='playurlid{n}' name='playurlid[]' type='hidden' value='0'/>&nbsp;&nbsp;播放器：<select id='playfrom{n}' name='playfrom[]' style='width:130px'><option value='no'>暂无数据</option>{select_play_sel}</select>&nbsp;&nbsp;服务器组：<select id='playserver{n}' name='playserver[]'><option value='no'>暂无数据</option>{select_server_sel}</select>&nbsp;&nbsp;备注：<input id='playnote{n}' name='playnote[]' size='50' value='{playnote}'>&nbsp;&nbsp;操作：&nbsp;&nbsp;<a href="javascript:void(0)" onclick="clearSect('playurl{n}')">清空</a>&nbsp;&nbsp;<a href="javascript:void(0)" onclick="removeSect(this)">删除</a>&nbsp;&nbsp;<a href="javascript:void(0)" onclick="upSect(this)">上移</a>&nbsp;&nbsp;<a href="javascript:void(0)" onclick="downSect(this)">下移</a>&nbsp;&nbsp;<a href="javascript:void(0)" onclick="showUpload('playurl{n}')">上传</a>&nbsp;&nbsp;<br><br><textarea id='playurl{n}' name='playurl[]' style='width:100%;height:150px;'>{playurl}</textarea></td></tr>
@@ -221,19 +362,23 @@ function showUpload(n){
     <tr>
     <tr>
     <td colspan="2">
-    <img onClick="appendplay({playcount},escape('{select_play}'),escape('{select_server}'))" src="../images/icons/edit_add.png" style="cursor:pointer" />&nbsp;&nbsp;单击添加一组播放地址 <span style="color:red;">（如果链接直接可以播放，请以 "dr_" 开头）</span>
+    <img onClick="appendplay({playcount},escape('{select_play}'),escape('{select_server}'))" src="../images/icons/edit_add.png" style="cursor:pointer" />&nbsp;&nbsp;单击添加一组播放地址
     </td>
     </tr>
+
+    <!--  屏蔽界面下载信息部分
     <tbody id="downlist">
-    <!-- BEGIN list_down -->
+     BEGIN list_down -
     <tr><td>&nbsp;下载地址{n}:</td><td><input id='downurlid{n}' name='downurlid[]' type='hidden' value='0'/>&nbsp;&nbsp;下载类型：<select id='downfrom{n}' name='downfrom[]' style='width:130px'><option value='no'>暂无数据</option>{select_down_sel}</select>&nbsp;&nbsp;服务器组：<select id='downserver{n}' name='downserver[]'><option value='no'>暂无数据</option>{select_server_sel}</select>&nbsp;&nbsp;备注：<input id='downnote{n}' name='downnote[]' size='50' value='{downnote}'>&nbsp;&nbsp;操作：&nbsp;&nbsp;<a href="javascript:void(0)" onclick="clearSect('downurl{n}')">清空</a>&nbsp;&nbsp;<a href="javascript:void(0)" onclick="removeSect(this)">删除</a>&nbsp;&nbsp;<a href="javascript:void(0)" onclick="upSect(this)">上移</a>&nbsp;&nbsp;<a href="javascript:void(0)" onclick="downSect(this)">下移</a>&nbsp;&nbsp;<a href="javascript:void(0)" onclick="showUpload('downurl{n}')">上传</a>&nbsp;&nbsp;<br><br><textarea id='downurl{n}' name='downurl[]' style='width:100%;height:150px;'>{downurl}</textarea></td></tr>
-    <!-- END list_down -->
+      END list_down
     </tbody>
     <tr>
     <td colspan="2">
     <img onClick="appenddown({downcount},escape('{select_down}'),escape('{select_server}'))" src="../images/icons/edit_add.png" style="cursor:pointer" />&nbsp;&nbsp;单击添加一组下载地址
     </td>
    </tr>
+    -->
+
    <tr>
     <td>介绍：</td>
     <td>

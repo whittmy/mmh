@@ -2,15 +2,17 @@
 if(!defined('MAC_ADMIN')){
 	exit('Access Denied');
 }
-$col_type=array('t_id','t_name','t_enname','t_pid','t_hide','t_sort','t_tpl','t_tpl_list','t_tpl_vod','t_tpl_play','t_tpl_down','t_key','t_des','t_title');
+$col_cata=array('t_id','t_name','t_enname','t_pid','t_hide','t_sort','t_tpl','t_tpl_list','t_tpl_vod','t_tpl_play','t_tpl_down','t_key','t_des','t_title');
 $col_topic=array('t_id','t_name','t_enname','t_sort','t_tpl','t_pic','t_content','t_key','t_des','t_title','t_hide','t_level','t_up','t_down','t_score','t_scoreall','t_scorenum','t_hits','t_dayhits','t_weekhits','t_monthhits','t_addtime','t_time');
-$col_vod=array('d_id', 'd_name', 'd_subname', 'd_enname', 'd_letter', 'd_color', 'd_pic', 'd_picthumb', 'd_picslide', 'd_starring', 'd_directed', 'd_tag', 'd_remarks', 'd_area', 'd_lang', 'd_year', 'd_type', 'd_type_expand', 'd_class', 'd_hide', 'd_lock', 'd_state', 'd_level', 'd_usergroup', 'd_stint', 'd_stintdown', 'd_hits', 'd_dayhits', 'd_weekhits', 'd_monthhits', 'd_duration', 'd_up', 'd_down', 'd_score','d_scoreall', 'd_scorenum', 'd_addtime', 'd_time', 'd_hitstime', 'd_maketime', 'd_content', 'd_playfrom', 'd_playserver', 'd_playnote', 'd_playurl', 'd_downfrom', 'd_downserver', 'd_downnote', 'd_downurl');
+$col_vod=array('d_id', 'd_name','d_pids', 'd_epname','d_eppic', 'd_subname', 'd_enname', 'd_letter', 'd_color', 'd_pic', 'd_picthumb', 'd_picslide', 'd_starring', 'd_directed', 'd_tag', 'd_remarks', 'd_area', 'd_lang', 'd_year', 'd_type', 'd_type_expand', 'd_class', 'd_hide', 'd_lock', 'd_state', 'd_level', 'd_usergroup', 'd_stint', 'd_stintdown', 'd_hits', 'd_dayhits', 'd_weekhits', 'd_monthhits', 'd_duration', 'd_up', 'd_down', 'd_score','d_scoreall', 'd_scorenum', 'd_addtime', 'd_time', 'd_hitstime', 'd_maketime', 'd_content', 'd_playfrom', 'd_playserver', 'd_playnote', 'd_playurl', 'd_downfrom', 'd_downserver', 'd_downnote', 'd_downurl');
 
 $col_class=array('c_id','c_name','c_pid','c_hide','c_sort');
 
-if($method=='type'){
+if($method=='cata'){
 	$plt->set_file('main', $ac.'_'.$method.'.html');
-	$sql = 'SELECT count(*) FROM {pre}vod_type where t_pid=0';
+    //顶级分类 t_pid须为0
+    // 获取 顶层分类个数
+	$sql = 'SELECT count(*) FROM {pre}vod_cata where t_pid=0';
 	$nums = $db->getOne($sql);
 	if($nums==0){
 		$plt->set_if('main','isnull',true);
@@ -18,31 +20,38 @@ if($method=='type'){
 	}
 	$plt->set_if('main','isnull',false);
 	
-	$colarr=$col_type;
+	$colarr=$col_cata;
 	array_push($colarr,'t_span','t_count');
-	
-	$rn='type';
+
+    //处理模板html中模块 list_cate
+	$rn='cata';
 	$plt->set_block('main', 'list_'.$rn, 'rows_'.$rn);
-	
-	$sql = 'SELECT * FROM {pre}vod_type WHERE t_pid=0 ORDER BY t_sort,t_id ASC';
+
+    //获取所有顶层类别
+    //并做从缓存中获取各个类别的具体信息。
+	$sql = 'SELECT * FROM {pre}vod_cata WHERE t_pid=0 ORDER BY t_sort,t_id ASC';
 	$rs = $db->query($sql);
 	while ($row = $db ->fetch_array($rs)){
+        //遍历每个顶层分类，
 		$t_count=0;
 		$t_span='';
-		$typearr = $MAC_CACHE['vodtype'][$row['t_id']];
-		if(is_array($typearr)){
+		$typearr = $MAC_CACHE['vodcata'][$row['t_id']];
+		if(is_array($typearr)){ //必须为数组
 			$ids = $typearr['childids'];
-			$t_count = $db->getOne('SELECT count(*) FROM {pre}vod WHERE d_type in('.$ids.')');
+            // rocking
+			//$t_count = $db->getOne('SELECT count(*) FROM {pre}vod WHERE d_type in('.$ids.')');
+            //获取顶层分类包含的所有的影片数量
+            $t_count = $db->getOne('SELECT count(*) from {pre}vod_r_type_dir where r_cid in('.$ids.')');
 		}
 		$valarr=array();
 		for($i=0;$i<count($colarr);$i++){
 			$n=$colarr[$i];
-			$valarr[$n]=$row[$n];
+			$valarr[$n]=$row[$n]; //顶层分类的所有属性存入 $valarr
 		}
 		$valarr['t_span']=$t_span;
 		$valarr['t_count']=$t_count;
 		
-		for($i=0;$i<count($colarr);$i++){
+		for($i=0;$i<count($colarr);$i++){ //尼玛，有必要和上面的那个循环分开处理吗
 			$n = $colarr[$i];
 			$v = $valarr[$n];
 			$plt->set_var($n,$v);
@@ -52,13 +61,15 @@ if($method=='type'){
 		$plt->set_if('rows_'.$rn,'isparent',true);
 		
 		
-		$sql = 'SELECT * FROM {pre}vod_type WHERE t_pid = \''.$row['t_id'].'\' ORDER BY t_sort,t_id ASC';
+		$sql = 'SELECT * FROM {pre}vod_cata WHERE t_pid = \''.$row['t_id'].'\' ORDER BY t_sort,t_id ASC';
 		$rs1 = $db->query($sql);
 		while ($row1 = $db ->fetch_array($rs1)){
 			$t_count=0;
 			$t_span='&nbsp;&nbsp;&nbsp;&nbsp;├&nbsp;';
 			$valarr=array();
-			$t_count = $db->getOne('SELECT count(*) FROM {pre}vod WHERE d_type='.$row1['t_id']);
+            //rocking
+			//$t_count = $db->getOne('SELECT count(*) FROM {pre}vod WHERE d_type='.$row1['t_id']);
+            $t_count = $db->getOne('SELECT count(*) from {pre}vod_r_type_dir where r_cid='.$row1['t_id']);
 			$valarr=array();
 			for($i=0;$i<count($colarr);$i++){
 				$n=$colarr[$i];
@@ -104,7 +115,7 @@ elseif($method=='typesaveall')
 		if (isN($t_tpl_play)) { $t_tpl_play = 'vodplay.html';}
 		if (isN($t_tpl_down)) { $t_tpl_down = 'voddown.html';}
 		
-		$db->Update ('{pre}vod_type',array('t_name','t_enname', 't_sort','t_tpl','t_tpl_vod','t_tpl_play','t_tpl_down'),array($t_name,$t_enname,$t_sort,$t_tpl,$t_tpl_vod,$t_tpl_play,$t_tpl_down),'t_id='.$id);
+		$db->Update ('{pre}vod_cata',array('t_name','t_enname', 't_sort','t_tpl','t_tpl_vod','t_tpl_play','t_tpl_down'),array($t_name,$t_enname,$t_sort,$t_tpl,$t_tpl_vod,$t_tpl_play,$t_tpl_down),'t_id='.$id);
 	}
 	updateCacheFile();
 	redirect( getReferer() );
@@ -118,17 +129,17 @@ elseif($method=='typeinfo')
 	$flag=empty($t_id) ? 'add' : 'edit';
 	$backurl=getReferer();
 	
-	$colarr=$col_type;
+	$colarr=$col_cata;
 	array_push($colarr,'flag','backurl');
 	
-	$valarr['t_tpl']='vod_type.html';
+	$valarr['t_tpl']='vod_cata.html';
 	$valarr['t_tpl_list']='vod_list.html';
 	$valarr['t_tpl_vod']='vod_detail.html';
 	$valarr['t_tpl_play']='vod_play.html';
 	$valarr['t_tpl_down']='vod_down.html';
 	
 	if($flag=='edit'){
-		$row=$db->getRow('select * from {pre}vod_type where t_id='.$t_id);
+		$row=$db->getRow('select * from {pre}vod_cata where t_id='.$t_id);
 		if($row){
 			for($i=0;$i<count($colarr);$i++){
 				$n=$colarr[$i];
@@ -146,7 +157,7 @@ elseif($method=='typeinfo')
 	
 	$rn='ptype';
 	$plt->set_block('main', 'list_'.$rn, 'rows_'.$rn);
-	foreach($MAC_CACHE['vodtype'] as $a){
+	foreach($MAC_CACHE['vodcata'] as $a){
 		if($a['t_pid']==0){
 			$plt->set_var('n',$a['t_name']);
 			$plt->set_var('v',$a['t_id']);
@@ -187,7 +198,7 @@ elseif($method=='classsaveall')
 elseif($method=='class')
 {
 	$plt->set_file('main', $ac.'_'.$method.'.html');
-	$sql = 'SELECT count(*) FROM {pre}vod_type where t_pid=0';
+	$sql = 'SELECT count(*) FROM {pre}vod_cata where t_pid=0';
 	$nums = $db->getOne($sql);
 	if($nums==0){
 		$plt->set_if('main','isnull',true);
@@ -201,7 +212,7 @@ elseif($method=='class')
 	$rn1='class';
 	$plt->set_block('list_'.$rn, 'list_'.$rn1, 'rows_'.$rn1);
 		
-	$sql = 'SELECT * FROM {pre}vod_type WHERE t_pid=0 ORDER BY t_sort,t_id ASC';
+	$sql = 'SELECT * FROM {pre}vod_cata WHERE t_pid=0 ORDER BY t_sort,t_id ASC';
 	$rs = $db->query($sql);
 	while ($row = $db ->fetch_array($rs)){
 		
@@ -231,7 +242,7 @@ elseif($method=='class')
 		unset($rs1);
 		
 		
-		$colarr=$col_type;
+		$colarr=$col_cata;
 		$valarr=array();
 		for($i=0;$i<count($colarr);$i++){
 			$n=$colarr[$i];
@@ -283,7 +294,7 @@ elseif($method=='classinfo')
 	
 	$rn='ptype';
 	$plt->set_block('main', 'list_'.$rn, 'rows_'.$rn);
-	foreach($MAC_CACHE['vodtype'] as $a){
+	foreach($MAC_CACHE['vodcata'] as $a){
 		if($a['t_pid']==0){
 			$plt->set_var('n',$a['t_name']);
 			$plt->set_var('v',$a['t_id']);
@@ -457,7 +468,7 @@ elseif($method=='topicdata')
 			$n=$colarr[$i];
 			$valarr[$n]=$row[$n];
 		}
-		$typearr = $GLOBALS['MAC_CACHE']['vodtype'][$valarr['d_type']];
+		$typearr = $GLOBALS['MAC_CACHE']['vodcata'][$valarr['d_type']];
 		$d_link = "../".$tpl->getLink('vod','detail',$typearr,$row);
 		
 		$d_link = str_replace("../".$MAC['site']['installdir'],"../",$d_link);
@@ -962,16 +973,22 @@ elseif($method=='list')
 	$plt->set_file('main', $ac.'_'.$method.'.html');
 	$page = intval($p['pg']);
 	if ($page < 1) { $page = 1; }
-	
-	$type=$p['type']; if(isN($type)){ $type=999; } else { $type=intval($type); }
+
+    //这些值的获取，是依据传入进来的’筛选条件‘。 (即通过搜索操作，执行该代码)
+    //参数来源： vod_list.html中js函数getPar()
+    // 参数的一致，还需同步修改本分支下面的'分页导航'部分的代码
+    $pid = $p['pid']; if(isN($pid)){$pid='';} else { $pid=intval($pid);};
+	$type= $p['type']; if(isN($type)){ $type=999; } else { $type=intval($type); }
+    //exit('type='.$type);
 	$topic=$p['topic']; if(isN($topic)){ $topic=999; } else { $topic=intval($topic); }
 	$level=$p['level']; if(isN($level)){ $level=999; } else { $level=intval($level); }
 	$hide=$p['hide']; if(isN($hide)){ $hide=999; } else { $hide=intval($hide); }
 	$lock=$p['lock']; if(isN($lock)){ $lock=999; } else { $lock=intval($lock); }
-	$state=$p['state']; if(isN($state)){ $state=999; } else { $state=intval($state); }
+	$state=$p['state']; if(isN($state)){ $state=5999; } else { $state=intval($state); }
 	$pic=$p['pic']; if(isN($pic)){ $pic=999; } else { $pic=intval($pic); }
 	
 	$id=$p['id'];
+    //exit($id.'');
 	$repeat=$p['repeat'];
 	$repeatlen=$p['repeatlen'];
 	$by=$p['by']; if(isN($by)) { $by='d_time'; }
@@ -981,11 +998,28 @@ elseif($method=='list')
 	$area=$p['area'];
 	$lang=$p['lang'];
 	$server=$p['server'];
-	
+
+
 	if($id!=''){
 		$where .= ' and d_id='.$id;
 	}
-	if($type!=999){
+    elseif($pid != ''){ //d_pids定义为 资源所属分类，以后都用pid标识
+        //exit($id.', '.$pid);
+        //若’筛选分类‘，则取资源的方式不同于之前的 d_type的筛选了。
+        //需要用到表{pre}vod_r_type_dir
+        $res = $db->query("select r_did from {pre}vod_r_type_dir where r_cid=$pid");
+        $idarr = array();
+        while ($row = $db ->fetch_array($res)) {
+            $idarr[] = $row['r_did'];
+        }
+        $idStr = implode(',', $idarr);
+        if(strlen($idStr)>0){
+           $where .= " and d_id in ($idStr)";
+        }
+        unset($idarr);
+    }
+
+	if($type!=999){ //d_type定义为 资源的类型
 		$where .=' and d_type='.$type.' ';
 	}
 	if($hide!=999){
@@ -1000,7 +1034,7 @@ elseif($method=='list')
 	if($topic!=999){
 		$where .=' and d_id in(select r_b from {pre}vod_relation where r_type=2 and r_a='.$topic.') ';
 	}
-	if($state!=999){
+	if($state!=5999){
 		if($state==0){ $where.=' and d_state=0 '; } else{ $where.=' and d_state>0 '; }
 	}
 	if(!empty($area)){
@@ -1015,7 +1049,9 @@ elseif($method=='list')
 			$where .=" and d_playfrom='' ";
 		}
 		else{
+            //INSTR(字段名, 字符串) 返回字符串在字段中内容的位置(基于1)，未找到返回0
 			$where .= ' AND instr(d_playfrom,\''.$play.'\')>0 ';
+            //exit('::::'.$where);
 		}
 		
 	}
@@ -1068,12 +1104,12 @@ elseif($method=='list')
     }
     $plt->set_var('repeatlen',$repeatlen);
     
-	if(!empty($wd) && $wd!='可搜索(视频名称、视频主演)'){
+	if(!empty($wd) && $wd!='可搜索(资源名称)'){
 		$where .= ' and ( instr(d_name,\''.$wd.'\')>0 or instr(d_starring,\''.$wd.'\')>0 ) ';
 		$plt->set_var('wd',$wd);
 	}
 	else{
-		$plt->set_var('wd','可搜索(视频名称、视频主演)');
+		$plt->set_var('wd','可搜索(资源名称)');
 	}
 	
 	$topicarr = $MAC_CACHE['vodtopic'];
@@ -1083,24 +1119,28 @@ elseif($method=='list')
 		array_push($topicarrn,$arr['t_name']);
 		array_push($topicarrv,$arr['t_id']);
 	}
-	$typearr = $MAC_CACHE['vodtype'];
-	$typearrn = array();
-	$typearrv = array();
-		foreach($typearr as $arr1){
+	$pidarr = $MAC_CACHE['vodcata'];
+	$pidarrn = array();
+	$pidarrv = array();
+	foreach($pidarr as $arr1){
 		$s='&nbsp;|—';
 		if($arr1['t_pid']==0){
-			array_push($typearrn,$s.$arr1['t_name']);
-			array_push($typearrv,$arr1['t_id']);
-			foreach($typearr as $arr2){
+			array_push($pidarrn,$s.$arr1['t_name']);
+			array_push($pidarrv,$arr1['t_id']);
+			foreach($pidarr as $arr2){
 				if($arr1['t_id']==$arr2['t_pid']){
 					$s='&nbsp;|&nbsp;&nbsp;&nbsp;|—';
-					array_push($typearrn,$s.$arr2['t_name']);
-					array_push($typearrv,$arr2['t_id']);
+					array_push($pidarrn,$s.$arr2['t_name']);
+					array_push($pidarrv,$arr2['t_id']);
 				}
 			}
 		}
 	}
-	
+    //资源类型>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    $typearrn = array('音频', '视频', '课件', '音频类别','视频类别' );
+	$typearrv = array(0,4,5,10,14);
+    //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
 	$areaarr = explode(',',$MAC['app']['area']);
 	$langarr = explode(',',$MAC['app']['lang']);
 	
@@ -1141,25 +1181,36 @@ elseif($method=='list')
 		array('a'=>'level','c'=>$level,'n'=>array('推荐1','推荐2','推荐3','推荐4','推荐5'),'v'=>array(1,2,3,4,5)),
 		array('a'=>'by','c'=>$by,'n'=>array('编号','总人气','日人气','周人气','月人气'),'v'=>array('d_id','d_hits','d_dayhits','d_weekhits','d_monthhits')),
 		array('a'=>'topic','c'=>$topic,'n'=>$topicarrn,'v'=>$topicarrv),
-		array('a'=>'type','c'=>$type,'n'=>$typearrn,'v'=>$typearrv),
+		array('a'=>'pid','c'=>$pid,'n'=>$pidarrn,'v'=>$pidarrv),
 		array('a'=>'area','c'=>$area,'n'=>$areaarr,'v'=>$areaarr),
+        array('a'=>'type','c'=>$type, 'n'=>$typearrn,'v'=>$typearrv), // n和v的数组应该一一对应，前者为值，后者为键
 		array('a'=>'lang','c'=>$lang,'n'=>$langarr,'v'=>$langarr),
 		array('a'=>'play','c'=>$play,'n'=>$playarrn,'v'=>$playarrv),
 		array('a'=>'down','c'=>$down,'n'=>$donwarrn,'v'=>$donwarrv),
 		array('a'=>'server','c'=>$server,'n'=>$serverarrn,'v'=>$serverarrv)
 	);
+    //这个部分对模板vod_list.html中的 检索模块的内容 以模块为单位进行更换。
 	foreach($arr as $a){
 		$colarr=$a['n'];
 		$valarr=$a['v'];
 		$rn=$a['a'];
+//        if($rn == 'type'){
+//            print_r($colarr);
+//            echo '<br>------2 ';
+//            print_r($valarr);
+//            echo '<br>';
+//        }
 		$plt->set_block('main', 'list_'.$rn, 'rows_'.$rn);
 		for($i=0;$i<count($colarr);$i++){
 			$n = $colarr[$i];
 			$v = $valarr[$i];
 			$c = $a['c']==$v ? 'selected': '';
-			$plt->set_var('v', $v );
-			$plt->set_var('n', $n );
-			$plt->set_var('c', $c );
+//            if($rn=='type'){
+//                echo $v.', '.$n.'<br>';
+//            }
+			$plt->set_var('v', $v ); //value
+			$plt->set_var('n', $n ); // 标签中的内容 和 'v' 一一对应
+			$plt->set_var('c', $c ); // selected??， 依据 传入进来的参数来判断，如上面$arr数组中的键值'c'对应的变量
 			$plt->parse('rows_'.$rn,'list_'.$rn,true);
 		}
 	}
@@ -1175,13 +1226,13 @@ elseif($method=='list')
 		$sql='select count(*) from {pre}vod a INNER JOIN (SELECT d_id,left(d_name,'.$repeatlen.') as d_name1 from {pre}vod where CHAR_LENGTH(d_name)>='.$repeatlen.' ) b on a.d_id = b.d_id  INNER JOIN (select d_name1 from tmptable) c on b.d_name1 = c.d_name1 ';
 		$nums = $db->getOne($sql);
 		
-		$sql='select a.`d_id`, `d_name`, `d_enname`, `d_color`, `d_pic`, `d_remarks`, `d_type`, `d_type_expand` ,`d_hide`, `d_lock`, `d_state`, `d_level`,  `d_hits`,  `d_addtime`, `d_time`, `d_maketime`, `d_playfrom`, `d_downfrom`,b.d_name1 from {pre}vod a INNER JOIN (SELECT d_id,left(d_name,'.$repeatlen.') as d_name1 from {pre}vod where CHAR_LENGTH(d_name)>='.$repeatlen.' ) b on a.d_id = b.d_id  INNER JOIN (select d_name1 from tmptable) c on b.d_name1 = c.d_name1 where 1=1 ORDER BY d_name asc  limit '.($MAC['app']['pagesize'] * ($page-1)) .",".$MAC['app']['pagesize'];
+		$sql='select a.`d_id`, `d_name`, `d_pids`, `d_enname`, `d_color`, `d_pic`, `d_remarks`, `d_type`, `d_type_expand` ,`d_hide`, `d_lock`, `d_state`, `d_level`,  `d_hits`,  `d_addtime`, `d_time`, `d_maketime`, `d_playfrom`, `d_downfrom`,b.d_name1 from {pre}vod a INNER JOIN (SELECT d_id,left(d_name,'.$repeatlen.') as d_name1 from {pre}vod where CHAR_LENGTH(d_name)>='.$repeatlen.' ) b on a.d_id = b.d_id  INNER JOIN (select d_name1 from tmptable) c on b.d_name1 = c.d_name1 where 1=1 ORDER BY d_name asc  limit '.($MAC['app']['pagesize'] * ($page-1)) .",".$MAC['app']['pagesize'];
 		$rs = $db->query($sql);
 	}
 	else{
 		$sql = 'SELECT count(*) FROM {pre}vod'.$tmptab.' where 1=1 '.$where;
 		$nums = $db->getOne($sql);
-		$sql = "SELECT `d_id`, `d_name`, `d_enname`, `d_color`, `d_pic`, `d_remarks`, `d_type`, `d_type_expand` ,`d_hide`, `d_lock`, `d_state`, `d_level`,  `d_hits`,  `d_addtime`, `d_time`,`d_maketime`, `d_playfrom`, `d_downfrom`  FROM {pre}vod".$tmptab." where 1=1 ";
+		$sql = "SELECT `d_id`, `d_name`, `d_pids`, `d_enname`, `d_color`, `d_pic`, `d_remarks`, `d_type`, `d_type_expand` ,`d_hide`, `d_lock`, `d_state`, `d_level`,  `d_hits`,  `d_addtime`, `d_time`,`d_maketime`, `d_playfrom`, `d_downfrom`  FROM {pre}vod".$tmptab." where 1=1 ";
 		$sql .= $where;
 		$sql .= " ORDER BY ".$by." DESC limit ".($MAC['app']['pagesize'] * ($page-1)) .",".$MAC['app']['pagesize'];
 		$rs = $db->query($sql);
@@ -1206,17 +1257,45 @@ elseif($method=='list')
 			$n=$colarr[$i];
 			$valarr[$n]=$row[$n];
 		}
-		$typearr = $MAC_CACHE['vodtype'][$row['d_type']];
-		
+
+        //类别显示部分重新改写
+		//$typearr = $MAC_CACHE['vodcata'][$row['d_type']];
+        $pidarr = explode(',' , $row['d_pids']);
+        $pidsStr = '';
+        foreach($pidarr as $pidtmp){
+            $pidtmp = trim($pidtmp);
+            if(strlen($pidtmp) > 0){
+                $pidsStr = $pidsStr . $MAC_CACHE['vodcata'][$pidtmp]['t_name'].',';
+            }
+        }
+        $pidsStr = rtrim($pidsStr, ', ');
+        //exit($pidsStr);
+
+
+        //来源部分重写，d_playfrom,只是内部显示而已，我们要用明文
+        $srcarr = explode("$$$", $row['d_playfrom'] );
+        $srcStr = '';
+        foreach($srcarr as $src){
+            $src = trim($src);
+            if(strlen($src) > 0){
+                $srcStr = $srcStr . $MAC_CACHE['vodplay'][$src]['show'].',';
+            }
+        }
+        $srcStr = rtrim($srcStr, ', ');
+
 		$valarr['d_state'] = $row['d_state']==0 ? '' : '['.$row['d_state'].']';
 		$valarr['d_time'] = $row['d_time']==0 ? '' : getColorDay($row['d_time']);
 		$valarr['d_hide'] = $row['d_hide']==0 ? '' : '<font color=red>[隐]</font>';
 		$valarr['d_lock'] = $row['d_lock']==0 ? '' : '<font color=red>[锁]</font>';
-		$valarr['d_type'] = $typearr['t_name'];
-		$valarr['d_playfrom'] = str_replace("$$$",",",$row["d_playfrom"]);
+		//$valarr['d_type'] = $typearr['t_name'];
+        $valarr['d_pids'] = $pidsStr;
+
+		//$valarr['d_playfrom'] = str_replace("$$$",",",$row["d_playfrom"]);
+        $valarr['d_playfrom'] = $srcStr;
+
 		$valarr['d_downfrom'] = str_replace("$$$",",",$row["d_downfrom"]);
 		
-	 	$d_link = "../".$tpl->getLink('vod','detail',$typearr,$row);
+	 	$d_link = "../".$tpl->getLink('vod','detail',/*$typearr*/$pidarr,$row);
 		$d_link = str_replace("../".$MAC['site']['installdir'],"../",$d_link);
 		if (substring($d_link,1,strlen($d_link)-1)=="/") { $d_link .= "index.". $MAC['app']['suffix'];}
 		$valarr['d_link'] = $d_link;
@@ -1244,12 +1323,12 @@ elseif($method=='list')
 	unset($downarr);
 	unset($serverarr);
 	
-	$pageurl = '?m=vod-list-type-'.$type.'-topic-'.$topic.'-level-'.$level.'-hide-'.$hide.'-lock-'.$lock.'-by-'.$by.'-pg-{pg}-wd-'.urlencode($wd).'-repeat-'.$repeat.'-repeatlen-'.$repeatlen.'-state-'.$state.'-pic-'.$pic.'-play-'.$play.'-down-'.$down.'-server-'.$server.'-area-'.urlencode($area).'-lang-'.urlencode($lang);
+	$pageurl = '?m=vod-list-type-'.$type.'-pid-'.$pid.'-topic-'.$topic.'-level-'.$level.'-hide-'.$hide.'-lock-'.$lock.'-by-'.$by.'-pg-{pg}-wd-'.urlencode($wd).'-repeat-'.$repeat.'-repeatlen-'.$repeatlen.'-state-'.$state.'-pic-'.$pic.'-play-'.$play.'-down-'.$down.'-server-'.$server.'-area-'.urlencode($area).'-lang-'.urlencode($lang);
 	$pages = '共'.$nums.'条数据&nbsp;当前:'.$page.'/'.$pagecount.'页&nbsp;'.pageshow($page,$pagecount,6,$pageurl,'pagego(\''.$pageurl.'\','.$pagecount.')');
 	$plt->set_var('pages', $pages );
 }
 
-elseif($method=='info')
+elseif($method=='info')  //同步参见对应模板： vod_info.html中的相关注释
 {
 	$plt->set_file('main', $ac.'_'.$method.'.html');
 	$id=$p['id'];
@@ -1258,11 +1337,14 @@ elseif($method=='info')
 	
 	$colarr=$col_vod;
 	array_push($colarr,'flag','backurl');
-	
+
+    //如果是编辑状态
 	if($flag=='edit'){
+        //取 $id对应的数据信息(vod中的影片信息，播放地址在其它表中)
 		$row=$db->getRow('select * from {pre}vod where d_id='.$id);
 		if($row){
 			$valarr=array();
+            //依据我们自己定义的想获取内容的列名($colarr)进行获取内容。
 			for($i=0;$i<count($colarr);$i++){
 				$n=$colarr[$i];
 				$valarr[$n]=$row[$n];
@@ -1273,10 +1355,33 @@ elseif($method=='info')
 	$valarr['flag']=$flag;
 	$valarr['backurl']=$backurl;
 	if($valarr['d_time']!=''){ $valarr['d_time']=date('Y-m-d H:i:s',$valarr['d_time']); }
-	
+
+    //至此，数据库表中的数据都取完并存入： $valarr数组， 列名(自定义的哦$colarr)作为键值
+    //但，播放地址$valarr['d_playurl']并非我所需要的值，因为播放地址不是在该表中。
+    //现在想来，网站在设计好缓存后，数据库的管理、存储、性能方面的考虑真的是多余的。 方便操作管理才是最重要的，否则增加工作量不说，性能还完全没有提升。
+    //除非频繁访问数据库的，才需要考虑其设计
+
+    //！！！！！ 为此，我做一个重大改变 ！！！！！！
+    //将我的播放列表数据res_libs的内容，全部转存入 mmh_vod表内 ==>>>
+    /*
+         l_src => d_playfrom   所有来源集合， 用 $$$ 分隔，每个来源会对应一组d_playurl
+         l_downurl => d_playurl  用$$$分隔来源， 每个来源下的url用#分隔，分隔后每个条目格式为 "集号<>url"
+         l_downurl2 => d_playurl2(新增) 本地资源的备份, 格式同 d_playurl
+
+        下面仅与剧集有关，不关乎来源，即：公共的
+         l_pic => d_eppic(新增)   //用 # 分隔每集， 每集由 "集号<>url" 组成
+         l_pic2=> d_eppic2（新增）  //本地资源的备份,格式同 d_eppic
+         l_name => d_epname(新增)  //格式同 d_eppic
+         l_playcnt => d_epplaycnt(新增) // 格式同 d_eppic               先清零，以后统计或许会用到
+    */
+
+
+	//此处替换模板中的所有相关标签，
+    //标签名大部分为 数据库表中列名—— colarr=>$col_vod(最顶端自己定义的)
 	for($i=0;$i<count($colarr);$i++){
 		$n = $colarr[$i];
 		$v = $valarr[$n];
+        //echo $n.', '.$v.'<br>';
 		$plt->set_var($n, $v );
 	}
 	if($valarr['d_lock']==0){
@@ -1292,20 +1397,39 @@ elseif($method=='info')
 	else{
 		$plt->set_if('main','isexpandtype',true);
 	}
-	
+
+    //模板vod_info.html有关于这部分的对应注释。
+    //该部分的处理是基于灵活配置考虑的， 通过xml文件来配置播放器相关数据
+    //分析是发现，虽然取的数据都来自于config.php中$MAC_CACHE全局变量，
+    //但其最初的数据源： inc/config/*.xml
+    //下面三个变量返回的的都是 <option语句
 	$select_play = makeSelectXml('vodplay','play',"");
-	$select_down = makeSelectXml('voddown','down',"");
+	//$select_down = makeSelectXml('voddown','down',"");
 	$select_server = makeSelectXml('vodserver','server',"");
 	
 	$plt->set_var('select_play',str_replace("'","\'",$select_play));
-	$plt->set_var('select_down',str_replace("'","\'",$select_down));
+	//$plt->set_var('select_down',str_replace("'","\'",$select_down));
 	$plt->set_var('select_server',str_replace("'","\'",$select_server));
-	
+
+    //处理分集标题
+    if(!empty($valarr['d_epname'])){
+        $epname = str_replace('#', Chr(13), $valarr['d_epname']);
+    }
+    $plt->set_var('epname',$epname);
+
+
+    //处理分集图片url
+    if(!empty($valarr['d_eppic'])){
+        $eppic = str_replace('#', Chr(13), $valarr['d_eppic']);
+    }
+    $plt->set_var('eppic', $eppic);
+
 	$playnum = 1;
 	$rn='play';
-	$plt->set_block('main', 'list_'.$rn, 'rows_'.$rn);
+    //这里的block，应该理解为’块', 特定注释块包含的部分(含注释)
+	$plt->set_block('main', 'list_'.$rn, 'rows_'.$rn); //控制 html模板中如 <!-- BEGIN list_play --> <!-- END list_play --> 之间部分的显示
 	if(!empty($valarr['d_playfrom'])){
-		$playfromarr = explode('$$$',$valarr['d_playfrom']);
+		$playfromarr = explode('$$$',$valarr['d_playfrom']);   //这个将作为我们的播放来源，按来源分成不同的播放地址组
 	    $playserverarr = explode('$$$',$valarr['d_playserver']);
 	    $playnotearr = explode('$$$',$valarr['d_playnote']);
 	    $playurlarr = explode('$$$',$valarr['d_playurl']);
@@ -1315,7 +1439,10 @@ elseif($method=='info')
 			$playserver = $playserverarr[$i];
 	    	$playnote = $playnotearr[$i];
 	    	$playurl = str_replace('#', Chr(13),$playurlarr[$i]);
-	    	
+
+            //播放器选项与 $playfrom关联
+            //替换selcet中的option选项，已确定哪个是被选中的。
+            //$playfrom的值要与option中的value值一致。
 	    	$select_play_sel = str_replace('<option value=\''.$playfrom.'\' >','<option value=\''.$playfrom.'\' selected>',$select_play);
 	    	
 	    	$select_server_sel = str_replace('<option value=\''.$playserver.'\' >','<option value=\''.$playserver.'\' selected>',$select_server);
@@ -1335,7 +1462,9 @@ elseif($method=='info')
 		$plt->set_var('rows_'.$rn,'');
 	}
 	$plt->set_var('playcount',$playnum);
-	
+
+    // rocking - 屏蔽界面 下载信息部分-
+    /*
 	$downnum = 1;
 	$rn='down';
 	$plt->set_block('main', 'list_'.$rn, 'rows_'.$rn);
@@ -1371,10 +1500,10 @@ elseif($method=='info')
 		$plt->set_var('rows_'.$rn,'');
 	}
 	$plt->set_var('downcount',$downnum);
+	*/
 	
 	
-	
-	$typearr = $MAC_CACHE['vodtype'];
+	$typearr = $MAC_CACHE['vodcata'];
 	$typearrn = array();
 	$typearrv = array();
 	foreach($typearr as $arr1){

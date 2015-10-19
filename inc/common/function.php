@@ -175,7 +175,9 @@ function my_error_handler($errno, $errmsg, $filename, $linenum, $vars)
 	$the_time = date("Y-m-d H:i:s (T)");
 	$errno = $errno & error_reporting();
     if($errno === 0) return;
-	$filename=str_replace(getcwd(),"",$filename);
+    //exit($filename);
+	$filename=str_replace(getcwd(),"",$filename); // 将 getcwd(
+    //exit($filename);
     $errorType = array(1=>"Error", 2=>"Warning", 4=>"Parsing Error",8=>"Notice", 16=>"Core Error", 32=>"Core Warning", 64=>"Complice Error", 128=>"Compile Warning", 256=>"User Error", 512=>"User Warning", 1024=>"User Notice", 2048=>"Strict Notice");
     
     $err .= '<li>[Type] ' . $errorType[$errno] .'</li>';
@@ -1452,7 +1454,7 @@ function makeSelectAll($tabName,$colId,$colName,$colPid,$colSort,$valPid,$valUrl
 	if (isN($valId)){ $valId=0; }
 	switch($tabName)
 	{
-		case "{pre}vod_type": $arr = $MAC_CACHE['vodtype']; break;
+		case "{pre}vod_cata": $arr = $MAC_CACHE['vodcata']; break;
 		case "{pre}game_type": $arr = $MAC_CACHE['gametype']; break;
 		case "{pre}art_type": $arr = $MAC_CACHE['arttype']; break;
 	}
@@ -1476,9 +1478,47 @@ function makeSelectAll($tabName,$colId,$colName,$colPid,$colSort,$valPid,$valUrl
 	unset($arr);
 	return $res;
 }
+/*
+    $GLOBALS：为 超全局变量，超全局变量还有如 $_SERVER，$_GET，$_POST，$_FILES，$_COOKIE，$_SESSION，$_REQUEST，$_ENV。
+           不作用于类变量($this->)
+    global： 仅应用于当前文件(包括 include,require等)
 
+    两者最大区别：
+        $GLOBALS为自动全局变量，已定义的全局变量便构成其键值 ==>
+            $GLOABALS['xx']和全局变量$xx是完全一致的，若删除(unset，或改变其引用)其中任何一个，都不会存在。修改也如此。
+            全脚本都可以使用。
+        global仅别名引用，仅使用于函数内部，可以改变外部全局变量，即使删除(unset，或改变其引用)也不会影响全局变量
+
+    一个小例子：
+        function t1() {
+            global $var1, $var2;
+            $var2 = &$var1;  //若用&，则相当于将变量$var2指向发生变化，即删除之前定义的$var2， 通过global的方式行不通，所以全局$var2的值仍为0
+                            // 若去掉&， 则会改变全局$var2的值，即 5.
+        }
+        function t2() {
+            $GLOBALS['var3'] = &$GLOBALS['var1'];   //$GLOBALS['var3']完全等同于 $var3， 所以怎么改变(这儿改变指向性，相当于删除)都成。
+        }
+        $var1 = 5;
+        $var2 = $var3 = 0;
+        t1();
+        print $var2 ."\n";  // 结果：0  !!!!!!!!!! 这儿与想象的有出入!!!!!! 详见上面分析
+        t2();
+        print $var3 ."\n";  //结果：5
+*/
 function makeSelectXml($f,$t,$v)
 {
+    //引用全局变量MAC_CACHE, 即cache.php中的 $MAC_CACHE 变量
+    //我们可以看看 $MAC_CACHE是如何来的。
+    //function.php--updateCacheFile()函数，
+    //其中包含了下面所需数据的来源>>>>>>>
+    /*
+        $arr['vodplay'] = getVodXml('vodplay.xml','play');
+        $arr['voddown'] = getVodXml('voddown.xml','down');
+        $arr['vodserver'] = getVodXml('vodserver.xml','server');
+    */
+    //<<<<
+
+
 	$arr1 = $GLOBALS['MAC_CACHE'][$f];
 	$rc=false;
 	foreach($arr1 as $k=>$v1){
@@ -1497,12 +1537,12 @@ function updateCacheFile()
 	$cachevodclass=array();
 	//视频分类缓存
 	try{
-		$cachevodtype= $db->queryarray('SELECT * FROM {pre}vod_type','t_id');
+		$cachevodtype= $db->queryarray('SELECT * FROM {pre}vod_cata','t_id');
 		$i=0;
 		foreach($cachevodtype as $v){
 			$strchild='';
 			$rc=false;
-			$rs= $db->query('SELECT t_id FROM {pre}vod_type WHERE t_pid=' .$v['t_id']);
+			$rs= $db->query('SELECT t_id FROM {pre}vod_cata WHERE t_pid=' .$v['t_id']);
 			while ($row = $db ->fetch_array($rs)){
 				if($rc){ $strchild .=','; }
 				$strchild .= $row['t_id'];
@@ -1526,12 +1566,13 @@ function updateCacheFile()
 		echo '更新视频分类缓存失败，请检查数据是否合法，是否包含引号、单引号、百分号、尖括号等特殊字符';
 		exit;
 	}
-	$arr['vodtype'] = $cachevodtype;
+	$arr['vodcata'] = $cachevodtype;
 	
 	//rocking
-	$mv_cacheValue = '<?php'.chr(10).'$MAC_MV_CACHE = '.compress_html(var_export($arr, true)).';'.chr(10).'?>';	
-	fwrite(fopen('/a/domains/other.nybgjd.com/public_html/frw/application/3DClub/include/vr_mv_cache.php', 'wb'), $mv_cacheValue);	
-	
+    /*
+	 $mv_cacheValue = '<?php'.chr(10).'$MAC_MV_CACHE = '.compress_html(var_export($arr, true)).';'.chr(10).'?>';
+	 fwrite(fopen('/a/domains/other.nybgjd.com/public_html/frw/application/3DClub/include/vr_mv_cache.php', 'wb'), $mv_cacheValue);
+	*/
 
 	$cachegameclass=array();
 	//游戏分类缓存
@@ -1676,7 +1717,7 @@ function updateCacheFile()
 	fwrite(fopen(MAC_ROOT.'/inc/config/cache.php','wb'),$cacheValue);
 	
 	//rocking
-	fwrite(fopen('/a/domains/other.nybgjd.com/public_html/frw/application/3DClub/include/vrcache.php', 'wb'), $cacheValue);	
+	//fwrite(fopen('/a/domains/other.nybgjd.com/public_html/frw/application/3DClub/include/vrcache.php', 'wb'), $cacheValue);
 	
 	
 	foreach($arr['vodplay'] as $k=>$v){

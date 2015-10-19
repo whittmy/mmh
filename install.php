@@ -90,7 +90,7 @@
 </head>
 <div class="container">
 	<div class="header">
-		<h1>苹果CMS 安装向导</h1>
+		<h1>萌系管理系统 安装向导</h1>
 		<span>8x.UTF8版</span>
 EOT;
 	}
@@ -98,7 +98,7 @@ EOT;
 	function show_footer()
 	{
 	echo <<<EOT
-		<div class="footer">&copy;2008 - 2014 <a href="http://www.maccms.com/">苹果CMS</a> Inc.</div>
+		<div class="footer">&copy;2008 - 2014 <a href="#">萌系管理系统</a> Inc.</div>
 	</div>
 </div>
 </body>
@@ -376,7 +376,7 @@ function checkdb(){
 	<td>网站的域名不带http://</td>
 	</tr>
 	<tr><th class="tbopt" align="left">&nbsp;网站名称:</th>
-	<td><input class="txt" type="text" name="site_name" id="site_name" value="苹果CMS" /></td>
+	<td><input class="txt" type="text" name="site_name" id="site_name" value="萌系管理系统" /></td>
 	<td>网站的名称</td>
 	</tr>
 	<tr><th class="tbopt" align="left">&nbsp;安装路径:</th>
@@ -1005,7 +1005,7 @@ EOT;
 	echo '<script type="text/javascript">showmessage(\'创建数据表 '.$db_tablepre.'vod_topic... \');</script>';
 	}
 	
-	if(!isExistTable("".$db_tablepre."vod_type",$db_name)){
+	if(!isExistTable("".$db_tablepre."vod_cata",$db_name)){
 	$db->query( "CREATE TABLE `".$db_tablepre."vod_type` (
   `t_id` smallint(6) unsigned NOT NULL AUTO_INCREMENT,
   `t_name` varchar(64) NOT NULL,

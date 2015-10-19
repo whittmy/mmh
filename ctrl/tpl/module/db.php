@@ -160,7 +160,7 @@ elseif($method=='getsize')
 
 elseif($method=='compress')
 {
-	$status = $db->query('OPTIMIZE  TABLE `{pre}art` , `{pre}art_relation` , `{pre}art_topic` , `{pre}art_type` , `{pre}comment` , `{pre}gbook` , `{pre}link` , `{pre}manager` , `{pre}user` , `{pre}user_card` , `{pre}user_group` , `{pre}user_pay` , `{pre}user_visit` , `{pre}vod` , `{pre}vod_relation` , `{pre}vod_topic` , `{pre}vod_type`, `{pre}vod_class` , `{pre}game` , `{pre}game_relation` , `{pre}game_topic` , `{pre}game_type`, `{pre}game_class` ');
+	$status = $db->query('OPTIMIZE  TABLE `{pre}art` , `{pre}art_relation` , `{pre}art_topic` , `{pre}art_type` , `{pre}comment` , `{pre}gbook` , `{pre}link` , `{pre}manager` , `{pre}user` , `{pre}user_card` , `{pre}user_group` , `{pre}user_pay` , `{pre}user_visit` , `{pre}vod` , `{pre}vod_relation` , `{pre}vod_topic` , `{pre}vod_cata`, `{pre}vod_class` , `{pre}game` , `{pre}game_relation` , `{pre}game_topic` , `{pre}game_type`, `{pre}game_class` ');
 	if($status){
 		showMsg('压缩优化成功','?m=db-list');
 	}
@@ -171,7 +171,7 @@ elseif($method=='compress')
 
 elseif($method=='repair')
 {
-	$status = $db->query('REPAIR TABLE `{pre}art` , `{pre}art_relation` , `{pre}art_topic` , `{pre}art_type` , `{pre}comment` , `{pre}gbook` , `{pre}link` , `{pre}manager` , `{pre}user` , `{pre}user_card` , `{pre}user_group` , `{pre}user_pay` , `{pre}user_visit` , `{pre}vod` , `{pre}vod_relation` , `{pre}vod_topic` , `{pre}vod_type`, `{pre}vod_class`  , `{pre}game` , `{pre}game_relation` , `{pre}game_topic` , `{pre}game_type`, `{pre}game_class`  ');
+	$status = $db->query('REPAIR TABLE `{pre}art` , `{pre}art_relation` , `{pre}art_topic` , `{pre}art_type` , `{pre}comment` , `{pre}gbook` , `{pre}link` , `{pre}manager` , `{pre}user` , `{pre}user_card` , `{pre}user_group` , `{pre}user_pay` , `{pre}user_visit` , `{pre}vod` , `{pre}vod_relation` , `{pre}vod_topic` , `{pre}vod_cata`, `{pre}vod_class`  , `{pre}game` , `{pre}game_relation` , `{pre}game_topic` , `{pre}game_type`, `{pre}game_class`  ');
 	if($status){
 		showMsg('修复成功','?m=db-list');
 	}
@@ -248,7 +248,7 @@ elseif($method=='bak')
 	$fpath = 'bak/' . date('Ymd',time()) . '_'. getRndStr(10) ;
 	$sql='';
 	$p=1;
-	$tables = ' `{pre}art_relation` , `{pre}art_topic` , `{pre}art_type` , `{pre}comment` , `{pre}gbook` , `{pre}link` , `{pre}user` , `{pre}user_card` , `{pre}user_group` , `{pre}user_pay` , `{pre}user_visit`  , `{pre}vod_relation` , `{pre}vod_topic` , `{pre}vod_type`, `{pre}vod_class` , `{pre}art`, `{pre}vod`  , `{pre}game` , `{pre}game_relation` , `{pre}game_topic` , `{pre}game_type`, `{pre}game_class` ';
+	$tables = ' `{pre}art_relation` , `{pre}art_topic` , `{pre}art_type` , `{pre}comment` , `{pre}gbook` , `{pre}link` , `{pre}user` , `{pre}user_card` , `{pre}user_group` , `{pre}user_pay` , `{pre}user_visit`  , `{pre}vod_relation` , `{pre}vod_topic` , `{pre}vod_cata`, `{pre}vod_class` , `{pre}art`, `{pre}vod`  , `{pre}game` , `{pre}game_relation` , `{pre}game_topic` , `{pre}game_type`, `{pre}game_class` ';
 	$tables = str_replace('{pre}',$GLOBALS['MAC']['db']['tablepre'],$tables);
 	$tablearr = explode(',',$tables);
 	$pagesize = 800;

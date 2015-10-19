@@ -200,7 +200,7 @@ elseif($method=='groupinfo')
 	}
 	
 	
-	$typearr = $MAC_CACHE['vodtype'];
+	$typearr = $MAC_CACHE['vodcata'];
 	$typearrn = array();
 	$typearrv = array();
 	foreach ($typearr as $arr)

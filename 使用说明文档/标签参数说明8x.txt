@@ -80,7 +80,7 @@ vod_playopen.html    视频弹窗播放页
 vod_search.html      视频搜索页面
 vod_topicindex.html  视频专题首页
 vod_topiclist.html   视频专题数据列表页
-vod_type.html        视频分类页面
+vod_cata.html        视频分类页面
 
 ****************************模板介绍结束****************************
 

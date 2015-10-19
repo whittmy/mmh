@@ -1,4 +1,5 @@
 <?php
+exit();
 	header("Content-type:image/jpeg");
 	session_start();
 	$authnum_session = ''; 

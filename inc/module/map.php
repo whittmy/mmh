@@ -12,7 +12,7 @@ if($method=='vod')
 	$sql = "SELECT * FROM {pre}vod WHERE d_hide=0 AND d_id=" . $tpl->P['id'];
 	$row = $db->getRow($sql);
 	if(!row){ showErr('System','未找到指定数据'); }
-	$tpl->T = $MAC_CACHE['vodtype'][$row['d_type']];
+	$tpl->T = $MAC_CACHE['vodcata'][$row['d_type']];
 	$tpl->D = $row;
 	unset($row);
 	$tpl->loadvod("rss");

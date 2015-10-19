@@ -63,7 +63,11 @@ select { height:25px;line-height: 25px; font-size: 13px; }
 .tb{ width:100%;table-layout:fixed; border:0px; clear:both;margin:0px; }
 .tb .thfirst{ padding-left:12px; }
 .tb th { OVERFLOW: hidden; BORDER-TOP: #cae0f4 1px solid; HEIGHT: 30px; WHITE-SPACE: nowrap; BORDER-BOTTOM: #cae0f4 1px solid; FONT-WEIGHT: bold; COLOR: #333333; BACKGROUND-COLOR: #f0f8fd;text-align:left; }
-.tb td { OVERFLOW: hidden; HEIGHT: 30px; WHITE-SPACE: nowrap; BORDER-BOTTOM: #cae0f4 1px solid; COLOR: #666666; }
+
+.nouse_for_debug{
+    BORDER-LEFT: #cae0f4 1px solid;BORDER-LEFT: #cae0f4 1px solid;
+}
+.tb td {OVERFLOW: hidden; HEIGHT: 30px; WHITE-SPACE: nowrap;  BORDER-BOTTOM: #cae0f4 1px solid; COLOR: #666666; }
 .tb td A:link { COLOR: #003399; TEXT-DECORATION: none }
 .tb td A:visited { COLOR: #003399; TEXT-DECORATION: none }
 .tb td A:hover { COLOR: #009900; TEXT-DECORATION: underline }

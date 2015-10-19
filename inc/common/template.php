@@ -606,7 +606,7 @@ class AppTpl
 		        	$limit = ' limit '.$limitstart.','. ($lp['num'] + $lp['start']);
 		        	
 		        	if ($this->P['vodtypeid'] != -1){
-		        		$typearr = $MAC_CACHE['vodtype'][$this->P['vodtypeid']];
+		        		$typearr = $MAC_CACHE['vodcata'][$this->P['vodtypeid']];
 		        		$expand='';
 		                
 		                $where .= ' AND ( d_type IN (' . $typearr['childids'] . ') '.$expand.' )';
@@ -639,7 +639,7 @@ class AppTpl
 			        if (!empty($lp['type'])){
 				        if ($lp['type'] != 'all'){
 				            if ($lp['type'] == 'current' && $this->P['vodtypeid'] > -1){
-				                $typearr = $MAC_CACHE['vodtype'][$this->P['vodtypeid']];
+				                $typearr = $MAC_CACHE['vodcata'][$this->P['vodtypeid']];
 				                $where .= ' and d_type in (' . $typearr['childids'].')';
 				            }
 							else{
@@ -647,7 +647,7 @@ class AppTpl
 									$where .= ' and d_type in (' . $lp['type']. ')';
 								}
 								else{
-									$typearr = $MAC_CACHE['vodtype'][$lp['type']];
+									$typearr = $MAC_CACHE['vodcata'][$lp['type']];
 									if(is_array($typearr)){
 										$where .= ' and d_type in (' . $typearr['childids'] . ')';
 									}
@@ -1549,7 +1549,7 @@ class AppTpl
 							$val = $this->getDataCount('game', " and d_type in (" . $typearr["childids"] . ")" );
                         }
                         else{
-                        	$typearr = $GLOBALS['MAC_CACHE']['vodtype'][$mrs["t_id"]];
+                        	$typearr = $GLOBALS['MAC_CACHE']['vodcata'][$mrs["t_id"]];
 							$val = $this->getDataCount('vod', " and d_type in (" . $typearr["childids"] . ")" );
                         }
                         break;
@@ -1655,9 +1655,9 @@ class AppTpl
             	}
             	break;
             case "vod":
-                $typearr = $GLOBALS['MAC_CACHE']['vodtype'][$mrs["d_type"]];
+                $typearr = $GLOBALS['MAC_CACHE']['vodcata'][$mrs["d_type"]];
                 if (!is_array($typearr)){ return; }
-                $tp = $GLOBALS['MAC_CACHE']['vodtype'][$typearr["t_pid"]];
+                $tp = $GLOBALS['MAC_CACHE']['vodcata'][$typearr["t_pid"]];
                 
                 switch($m2)
                 {

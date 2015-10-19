@@ -1,6 +1,10 @@
 <?php
+//获取 admin_conn.php所在目录的路径， \ => /
 define('MAC_ADMIN', preg_replace("|[/\\\]{1,}|",'/',dirname(__FILE__) ) );
+//定义基本的常量，并加载系统最基本的配置、类、函数以及错误警告提示等级等
 require(MAC_ADMIN."/../inc/conn.php");
+
+
 require(MAC_ADMIN.'/../inc/common/phplib.php');
 define('MAC_VERSION','2015.02.09');
 
@@ -62,7 +66,7 @@ function ckSql($v)
 function headAdmin2($title)
 {
 echo <<<EOT
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="X-UA-Compatible" content="IE=7" /><title>$title - 苹果CMS</title><link rel="stylesheet" type="text/css" href="tpl/images/style.css" /></head><body style="line-height:20px">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="X-UA-Compatible" content="IE=7" /><title>$title - 萌系管理系统</title><link rel="stylesheet" type="text/css" href="tpl/images/style.css" /></head><body style="line-height:20px">
 EOT;
 }
 
@@ -252,7 +256,7 @@ function getTabName($tab)
 	if (strpos($tab,'vod_topic')>0){
 		return '视频专题';
 	}
-	if (strpos($tab,'vod_type')>0){
+	if (strpos($tab,'vod_cata')>0){
 		return '视频分类';
 	}
 	if (strpos($tab,'vod')>0){
@@ -298,7 +302,7 @@ function getTemplateFlag($f)
 		
 		case "vod_detail.html":$str="视频内容页";break;
 		case "vod_list.html":$str="视频筛选页";break;
-		case "vod_type.html":$str="视频分类页";break;
+		case "vod_cata.html":$str="视频分类页";break;
 		case "vod_map.html":$str="视频地图页";break;
 		case "vod_play.html":$str="视频播放页";break;
 		case "vod_down.html":$str="视频下载页";break;

@@ -216,6 +216,7 @@ class AppDb
 	
 	function Update($tabName,$arrFieldName , $arrValue ,$KeyStr,$f=0)
 	{
+        //echo 'update <br>';
 		$res=false;
 		if (chkArray($arrFieldName,$arrValue)){
 			$sqlval = "";

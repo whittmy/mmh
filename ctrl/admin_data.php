@@ -51,6 +51,7 @@ else if($ac=='getinfo')
 else if($ac=='save')
 {
 	$tab = be("all","tab");
+    $tb_cls = be("all", "tb_cls");
 	$flag = be("all","flag");
 	$upcache=false;
 	$ismake=false;
@@ -69,7 +70,7 @@ else if($ac=='save')
 			if (!isNum($valarr['l_sort'])) { $valarr['l_sort'] = $db->getOne("SELECT MAX(l_sort) FROM {pre}link")+1; }
 			$where = "l_id=".$id;
 			break;
-		case "vod_type" :
+		case "vod_cata" :
 			$id = be("all","t_id");
 			$colarr = array("t_name","t_enname","t_sort","t_pid","t_tpl",'t_tpl_list',"t_tpl_vod","t_tpl_play","t_tpl_down","t_key","t_des","t_title");
 			for($i=0;$i<count($colarr);$i++){
@@ -77,7 +78,7 @@ else if($ac=='save')
 				$valarr[$n]=be("all",$n);
 			}
 			if(isN($valarr['t_enname'])) { $valarr['t_enname'] = Hanzi2Pinyin($valarr['t_name']);}
-			if(!isNum($valarr['t_sort'])) { $valarr['t_sort'] = $db->getOne("SELECT MAX(t_sort) FROM {pre}vod_type")+1; }
+			if(!isNum($valarr['t_sort'])) { $valarr['t_sort'] = $db->getOne("SELECT MAX(t_sort) FROM {pre}vod_cata")+1; }
 			$where = "t_id=".$id;
 			$upcache=true;
 			break;
@@ -328,16 +329,38 @@ else if($ac=='save')
 		    }
 			break;
 		case "vod":
+            //表单数据处理
+            //很多知识点
+
 			$id = be("all","d_id");
 			$uptag = be("all","uptag");
 			$uptime = be("all","uptime");
-			
-			$colarr=array('d_name', 'd_subname', 'd_enname', 'd_letter', 'd_color', 'd_pic', 'd_picthumb', 'd_picslide', 'd_starring', 'd_directed', 'd_tag', 'd_remarks', 'd_area', 'd_lang', 'd_year', 'd_type', 'd_type_expand' , 'd_class', 'd_topic', 'd_hide', 'd_lock', 'd_state', 'd_level', 'd_usergroup', 'd_stint', 'd_stintdown', 'd_hits', 'd_dayhits', 'd_weekhits', 'd_monthhits', 'd_duration', 'd_up', 'd_down', 'd_score','d_scoreall', 'd_scorenum', 'd_addtime', 'd_time', 'd_hitstime', 'd_maketime', 'd_content', 'd_playfrom', 'd_playserver', 'd_playnote', 'd_playurl', 'd_downfrom', 'd_downserver', 'd_downnote', 'd_downurl');
+
+            //将要更新的一些列，都放在该数组内
+			$colarr=array('d_name', 'd_subname', 'd_pids', 'd_epname','d_eppic', 'd_enname', 'd_letter', 'd_color', 'd_pic', 'd_picthumb', 'd_picslide', 'd_starring', 'd_directed', 'd_tag', 'd_remarks', 'd_area', 'd_lang', 'd_year', 'd_type', 'd_type_expand' , 'd_class', 'd_topic', 'd_hide', 'd_lock', 'd_state', 'd_level', 'd_usergroup', 'd_stint', 'd_stintdown', 'd_hits', 'd_dayhits', 'd_weekhits', 'd_monthhits', 'd_duration', 'd_up', 'd_down', 'd_score','d_scoreall', 'd_scorenum', 'd_addtime', 'd_time', 'd_hitstime', 'd_maketime', 'd_content', 'd_playfrom', 'd_playserver', 'd_playnote', 'd_playurl', 'd_downfrom', 'd_downserver', 'd_downnote', 'd_downurl');
 			for($i=0;$i<count($colarr);$i++){
 				$n=$colarr[$i];
 				$valarr[$n]=be("all",$n);
 			}
-			
+
+
+            //获取剧情(多个复选框)的相关设置数据
+            $valarr['d_class'] = be('arr','d_class');
+            if(!empty($valarr['d_class'])){
+                $valarr['d_class'] = ','.$valarr['d_class'].',';
+            }
+
+            //rocking 获取多类别信息(多复选框)
+            $valarr['d_pids'] = be('arr', 'd_pids');
+            if(!empty($valarr['d_pids'])){
+                $valarr['d_pids'] = ','.$valarr['d_pids'].',';
+            }
+
+            //rocking 获取剧集标题和图片
+            $valarr['d_epname'] =  str_replace("\r\n", '#', be('all', 'epname')); //处理换行
+            $valarr['d_eppic'] = str_replace("\r\n", '#', be('all', 'eppic'));
+
+
 			if(strlen($valarr['d_addtime'])!=10) { $valarr['d_addtime']=time(); }
     		if($valarr['d_time']!=''){  $valarr['d_time']= strtotime($valarr['d_time']); } else { $valarr['d_time']= $valarr['d_addtime']; }
     		if($uptime=='1'){ $valarr['d_time'] =time(); }
@@ -361,11 +384,6 @@ else if($ac=='save')
 		    $downurlarrlen=count($downurlarr); $downfromarrlen=count($downfromarr); $downserverarrlen=count($downserverarr);
 		    if(isN($downurl)) { $downurlarrlen=-1; }
 		    
-		    $valarr['d_class'] = be('arr','d_class');
-		    if(!empty($valarr['d_class'])){
-		    	$valarr['d_class'] = ','.$valarr['d_class'].',';
-		    }
-		    
 		    $rc = false;
 		    for ($i=0;$i<$playfromarrlen;$i++){
 		        if ($playurlarrlen >= $i){
@@ -374,7 +392,7 @@ else if($ac=='save')
 				        $d_playfrom .= trim($playfromarr[$i]);
 				        $d_playserver .= trim($playserverarr[$i]);
 				        $d_playnote .=  trim($playnotearr[$i]);
-				        $d_playurl .= str_replace(chr(13),'#',str_replace(chr(10),'',trim($playurlarr[$i])));
+				        $d_playurl .= str_replace(chr(13),'#',str_replace(chr(10),'',trim($playurlarr[$i])));  //\r\n
 				        $rc =true;
 			        }
 		        }
@@ -453,22 +471,86 @@ else if($ac=='save')
 		
 			
 	}
-	if($flag=="add"){
-		$db->Add('{pre}'.$tab,$colarr,$valarr);
-		if($ismake){
-			$id=$db->insert_id();
-			$js = str_replace('{id}',$id,$js);
-		}
-	}
-	elseif($flag=="edit"){
-		$backurl=be("all","backurl");
-		$db->Update('{pre}'.$tab,$colarr,$valarr,$where,1);
-		if($ismake){
-			$js = str_replace('{id}',$id,$js);
-		}
-	}
-	if($upcache){ updateCacheFile(); }
-    showMsg('数据已保存'.$js,$backurl);
+
+    //由于涉及到同时对两表进行修改，为保证数据同步，需要采用事务处理
+    //而且两个表的引擎必须支持事务才行，InnoDB
+    //更新用于索引的分类信息，
+    $dbOpOk = true;
+
+    if($flag=="add" || $flag=="edit"){
+        $db->query("BEGIN"); //>>>>>>>>>>
+
+        $res1 = false;
+        $res2 = false;
+        $res2 = false;
+
+        //先删除所属分类
+        $res1 = $db->query("delete from {pre}$tb_cls where r_did=$id");
+//        if($res1){
+//            echo 'res1 is true<br>';
+//        }
+
+        //再根据d_pids的值进行插入
+        $pidarr = explode(',', $valarr['d_pids']);
+        foreach($pidarr as $pid){
+            $pid = trim($pid);
+            if(strlen($pid) > 0){
+                if($sql==null){
+                    $sql = "insert into {pre}$tb_cls (r_cid, r_did) values ";
+                }
+                $sql .= "($pid, $id),";
+            }
+        }
+        if(!empty($sql)){
+            $sql = rtrim($sql, ', ');
+            //exit($sql);
+            $res2 = $db->query($sql);
+        }
+        else{
+            $res2  = true;
+        }
+
+//        if($res2){
+//            echo 'res2 is true';
+//        }
+
+        if($flag=="add"){
+            $res3 = $db->Add('{pre}'.$tab,$colarr,$valarr);
+            if($ismake){
+                $id=$db->insert_id();
+                $js = str_replace('{id}',$id,$js);
+            }
+        }
+        elseif($flag=="edit"){
+            $backurl=be("all","backurl");
+            $res3 = $db->Update('{pre}'.$tab,$colarr,$valarr,$where,1);
+            if($ismake){
+                $js = str_replace('{id}',$id,$js);
+            }
+        }
+
+//        if($res3){
+//            echo "res3 is true";
+//        }
+//        exit;
+        if($res1 && $res2 && $res3){
+            mysql_query("COMMIT");
+            $dbOpOk = true;
+        }
+        else{
+            mysql_query("ROLLBACK");
+            $dbOpOk = false;
+        }
+        $db->query("END");
+        //<<<<<<<<<<<<<<<<<<<<<<
+    }
+
+    if($upcache && $dbOpOk){ updateCacheFile(); }
+
+    if($dbOpOk)
+        showMsg('数据已保存'.$js,$backurl);
+    else
+        showMsg('数据库错误，保存失败', $backurl);
 }
 
 else if($ac=='del')
@@ -507,7 +589,7 @@ else if($ac=='del')
 				$ids= be("arr","l_id");
 			}
 			break;
-		case "vod_type":
+		case "vod_cata":
 			$col="t_id";
 			$ids = be("get","t_id");
 			if(isN($ids)){
@@ -515,12 +597,12 @@ else if($ac=='del')
 			}
 			$arr=explode(',',$ids);
 			foreach($arr as $a){
-				$cc = $db->getOne('select count(*) from {pre}vod_type where t_pid='.$a);
+				$cc = $db->getOne('select count(*) from {pre}vod_cata where t_pid='.$a);
 				if($cc>0){
 					showMsg('请先删除本类下面的子栏目','');
 					return;
 				}
-				$cc = $db->getOne('select count(*) from {pre}vod where d_type='.$a);
+				$cc = $db->getOne('select count(*) from {pre}vod where d_type='.$a);  //?????????
 				if($cc>0){
 					showMsg('请先删除本类下面的视频','');
 					return;
@@ -719,7 +801,7 @@ elseif($ac=='getclass')
 {
 	$class = be("all",'class');
 	
-	$typearr = $MAC_CACHE['vodtype'][$id];
+	$typearr = $MAC_CACHE['vodcata'][$id];
 	if($typearr['t_pid']>0){
 		$id=$typearr['t_pid'];
 	}
@@ -736,7 +818,31 @@ elseif($ac=='getclass')
 			array_push($valarr,$arr);
 		}
 	}
-	echo json_encode($valarr);;
+	echo json_encode($valarr);
+}
+elseif($ac=='getpids'){
+    $pidsstr = be("all", "pids");
+    $pidarr = explode(",", $pidsstr);
+
+    $valarr=array();
+    foreach( $MAC_CACHE['vodcata'] as $type){
+        if(in_array($type['t_id'], $pidarr)){
+            $arr = array();
+            $arr['id'] = $type['t_id'];
+            $arr['name'] = $type['t_name'];
+            $arr['chk'] =  'true';
+            array_push($valarr,$arr);
+        }
+    }
+
+    //test
+//    $arr = array();
+//    $arr['id'] = '12';
+//    $arr['name']='test';
+//    $arr['chk']= 'true';
+//    array_push($valarr,$arr);
+
+    echo json_encode($valarr);;
 }
 elseif($ac=='getgameclass')
 {
@@ -917,7 +1023,7 @@ elseif($ac=='shift')
 		else{ $tab2='art'; }
 		switch($tab)
 		{
-			case 'vod_type':
+			case 'vod_cata':
 				$tab2 = 'vod';
 				$colid2 = 'd_type';
 				break;
