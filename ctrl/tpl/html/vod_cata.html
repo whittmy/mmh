@@ -11,11 +11,19 @@
 <script type="text/javascript" src="tpl/js/adm.js"></script>
 <script language="javascript">
 $(function(){
+    //这几个函数都是对 选中的 item进行操作
+    // 传递到服务器的数据也必须是 被选中的，如何做到的呢？
+    //对于表单提交，实际上所有的数据都会提交，只是服务端根据需要取具体的数据
+    //js中如ajaxshow，可以根据选中属性获取对应的数据
 	$("#btnEdit").click(function(){
 		if(checkCount('t_id[]')==0){alert("请至少选择一个数据");return;}
-		$("#form1").attr("action","?m=vod-typesaveall");
+		$("#form1").attr("action","?m=vod-catasaveall");
 		$("#form1").submit();
 	});
+
+    //底部的删除按钮
+    //和每个条目后面的删除有一丁点儿区别，这儿是post的
+    //尾部的删除是get
 	$("#btnDel").click(function(){
 		if(checkCount('t_id[]')==0){alert("请至少选择一个数据");return;}
 		if(confirm('确定要删除吗')){
@@ -24,8 +32,9 @@ $(function(){
 		}
 	});
 	$("#btnAdd").click(function(){
-		location.href='?m=vod-typeinfo';
+		location.href='?m=vod-catainfo';
 	});
+
 	$("#btnHide").click(function(){
 		ajaxshow('btnHide','hide','vod_cata','t_id','t_hide','');
 	});
@@ -68,10 +77,10 @@ $(function(){
 		<!-- ELSE ishide -->
 		<a href="admin_data.php?ac=hide&tab=vod_cata&colid=t_id&col=t_hide&id={t_id}&val=1"><font color=red>隐藏</font></a> |
 		<!-- ENDIF ishide -->
-	    <a href="?m=vod-typeinfo-id-{t_id}">修改</a> |
+	    <a href="?m=vod-catainfo-id-{t_id}">修改</a> |
 	    <a href="admin_data.php?ac=del&tab=vod_cata&t_id={t_id}" onClick="return confirm('确定要删除吗?');">删除</a> |
 	    <!-- IF isparent -->
-		<a href="?m=vod-typeinfo-pid-{t_id}"><font color=green>添加</font></a>
+		<a href="?m=vod-catainfo-pid-{t_id}"><font color=green>添加</font></a>
 		<!-- ENDIF isparent -->
 	    </td>
 	</tr>
@@ -81,10 +90,15 @@ $(function(){
     <input type="button" id="btnChkAll" value="全选" class="input" onClick="checkAll('t_id[]');">
     <input type="button" id="btnChkOther" value="反选" class="input" onClick="checkOther('t_id[]');">
 	<input type="button" value="添加" id="btnAdd" class="input" />
+        <!-- 这个功能不会用，也不好理解，先屏蔽
+        估计是 直接修改提交的功能
 	<input type="button" value="修改" id="btnEdit" class="input" />
+        -->
 	<input type="button" value="删除" id="btnDel" class="input" />
 	<input type="button" value="显隐" id="btnHide" class="input" />
+    <!-- 转移分类下的所有资源，该功能就目前框架实现起来有些麻烦，先删除
 	<input type="button" value="转移" id="btnMove" class="input" />
+	--->
     </td></tr>
 </table>
 </form>

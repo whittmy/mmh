@@ -1653,7 +1653,16 @@ function updateCacheFile()
 		exit;
 	}
 	$arr['vodclass'] = $cachevodclass;
-	
+
+    //资源类型的缓存
+    try{
+        $cacherestype = $db->queryArray('select * from {pre}vod_restype', 't_id');
+    }
+    catch(Exception $e){
+        echo '更新资源类型缓存失败';
+        exit;
+    }
+    $arr['restype'] = $cacherestype;
 	
 	//视频专题缓存
 	try{

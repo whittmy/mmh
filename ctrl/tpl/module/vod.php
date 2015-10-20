@@ -35,9 +35,9 @@ if($method=='cata'){
         //遍历每个顶层分类，
 		$t_count=0;
 		$t_span='';
-		$typearr = $MAC_CACHE['vodcata'][$row['t_id']];
-		if(is_array($typearr)){ //必须为数组
-			$ids = $typearr['childids'];
+		$pidarr = $MAC_CACHE['vodcata'][$row['t_id']];
+		if(is_array($pidarr)){ //必须为数组
+			$ids = $pidarr['childids'];
             // rocking
 			//$t_count = $db->getOne('SELECT count(*) FROM {pre}vod WHERE d_type in('.$ids.')');
             //获取顶层分类包含的所有的影片数量
@@ -94,7 +94,32 @@ if($method=='cata'){
 	unset($rs);
 }
 
-elseif($method=='typesaveall')
+elseif($method == 'restype'){
+    $plt->set_file('main', $ac.'_'.$method.'.html');
+
+    $rn='restype';
+    $plt->set_block('main', 'list_'.$rn, 'rows_'.$rn);
+
+    $colarr = array('t_id', 't_name');
+    $sql = 'select * from {pre}vod_restype';
+    $rs = $db->query($sql);
+    $hasdata = false;
+    while ($row = $db ->fetch_array($rs)){
+        foreach($colarr as $col){
+            $plt->set_var($col, $row[$col]);
+        }
+        $hasdata = true;
+        $plt->parse('rows_'.$rn,'list_'.$rn,true);
+    }
+
+    if($hasdata)
+        $plt->set_if('main','isnull',false);
+    else
+        $plt->set_if('main','isnull',true);
+
+}
+
+elseif($method=='catasaveall')
 {
 	$t_id = be('arr','t_id');
 	$ids = explode(',',$t_id);
@@ -121,7 +146,7 @@ elseif($method=='typesaveall')
 	redirect( getReferer() );
 }
 
-elseif($method=='typeinfo')
+elseif($method=='catainfo')
 {
 	$plt->set_file('main', $ac.'_'.$method.'.html');
 	$t_id=$p['id'];
@@ -468,8 +493,8 @@ elseif($method=='topicdata')
 			$n=$colarr[$i];
 			$valarr[$n]=$row[$n];
 		}
-		$typearr = $GLOBALS['MAC_CACHE']['vodcata'][$valarr['d_type']];
-		$d_link = "../".$tpl->getLink('vod','detail',$typearr,$row);
+		$pidarr = $GLOBALS['MAC_CACHE']['vodcata'][$valarr['d_type']];
+		$d_link = "../".$tpl->getLink('vod','detail',$pidarr,$row);
 		
 		$d_link = str_replace("../".$MAC['site']['installdir'],"../",$d_link);
 		if (substring($d_link,1,strlen($d_link)-1)=="/") { $d_link .= "index.". $MAC['app']['suffix'];}
@@ -480,7 +505,7 @@ elseif($method=='topicdata')
 			$v = $valarr[$n];
 			$plt->set_var($n,$v);
 		}
-		unset($typearr);
+		unset($pidarr);
 		$plt->parse('rows_'.$rn,'list_'.$rn,true);
 	}
 	$pageurl = '?m=vod-topicdata-pg-{pg}-tid-'.$tid.'-wd-'.urlencode($wd);
@@ -990,7 +1015,9 @@ elseif($method=='list')
 	$id=$p['id'];
     //exit($id.'');
 	$repeat=$p['repeat'];
-	$repeatlen=$p['repeatlen'];
+	$repeatlen=$p['repeatlen'];  //这个没有细细研究，但是其影响了sql语句，而且如果>0，查询速度会变慢的离谱
+    ////////if(isN($repeatlen)){ $repeatlen = 1;}
+    //exit('$repeatlen= '.$repeatlen);
 	$by=$p['by']; if(isN($by)) { $by='d_time'; }
 	$wd=$p['wd'];
 	$play=$p['play'];
@@ -1101,6 +1128,9 @@ elseif($method=='list')
 			
 			$db->query($tmpsql);
 		}
+
+        //rocking +
+        $by = 'd_name';
     }
     $plt->set_var('repeatlen',$repeatlen);
     
@@ -1137,8 +1167,13 @@ elseif($method=='list')
 		}
 	}
     //资源类型>>>>>>>>>>>>>>>>>>>>>>>>>>>
-    $typearrn = array('音频', '视频', '课件', '音频类别','视频类别' );
-	$typearrv = array(0,4,5,10,14);
+    $typearr = $MAC_CACHE['restype'];
+    $typearrn = array();//array('音频', '视频', '课件', '音频类别','视频类别' );
+	$typearrv = array();//array(0,4,5,10,14);
+    foreach($typearr as $arr1){
+        array_push($typearrv, $arr1['t_id']); //key
+        array_push($typearrn, $arr1['t_name']); //value
+    }
     //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 	$areaarr = explode(',',$MAC['app']['area']);
@@ -1253,6 +1288,7 @@ elseif($method=='list')
 	while ($row = $db ->fetch_array($rs))
 	{
 		$valarr=array();
+        //构造最基本的数据
 		for($i=0;$i<count($colarr);$i++){
 			$n=$colarr[$i];
 			$valarr[$n]=$row[$n];
@@ -1287,7 +1323,11 @@ elseif($method=='list')
 		$valarr['d_time'] = $row['d_time']==0 ? '' : getColorDay($row['d_time']);
 		$valarr['d_hide'] = $row['d_hide']==0 ? '' : '<font color=red>[隐]</font>';
 		$valarr['d_lock'] = $row['d_lock']==0 ? '' : '<font color=red>[锁]</font>';
-		//$valarr['d_type'] = $typearr['t_name'];
+
+        //资源类型
+        $valarr['d_type'] = $typearr[$row['d_type']]['t_name'];
+
+        //分类
         $valarr['d_pids'] = $pidsStr;
 
 		//$valarr['d_playfrom'] = str_replace("$$$",",",$row["d_playfrom"]);
@@ -1502,25 +1542,34 @@ elseif($method=='info')  //同步参见对应模板： vod_info.html中的相关
 	$plt->set_var('downcount',$downnum);
 	*/
 	
-	
-	$typearr = $MAC_CACHE['vodcata'];
-	$typearrn = array();
-	$typearrv = array();
-	foreach($typearr as $arr1){
+	//分类处理
+	$pidarr = $MAC_CACHE['vodcata'];
+	$pidarrn = array();
+	$pidarrv = array();
+	foreach($pidarr as $arr1){
 		$s='&nbsp;|—';
 		if($arr1['t_pid']==0){
-			array_push($typearrn,$s.$arr1['t_name']);
-			array_push($typearrv,$arr1['t_id']);
-			foreach($typearr as $arr2){
+			array_push($pidarrn,$s.$arr1['t_name']);
+			array_push($pidarrv,$arr1['t_id']);
+			foreach($pidarr as $arr2){
 				if($arr1['t_id']==$arr2['t_pid']){
 					$s='&nbsp;|&nbsp;&nbsp;&nbsp;|—';
-					array_push($typearrn,$s.$arr2['t_name']);
-					array_push($typearrv,$arr2['t_id']);
+					array_push($pidarrn,$s.$arr2['t_name']);
+					array_push($pidarrv,$arr2['t_id']);
 				}
 			}
 		}
 	}
-	
+
+    //资源类型处理
+    $typearr = $MAC_CACHE['restype'];
+    $typearrn = array();
+    $typearrv = array();
+    foreach($typearr as $arr1){
+        array_push($typearrn, $arr1['t_name']);
+        array_push($typearrv, $arr1['t_id']);
+    }
+
 	$grouparr = $MAC_CACHE['usergroup'];
 	$grouparrn = array();
 	$grouparrv = array();
@@ -1535,10 +1584,11 @@ elseif($method=='info')  //同步参见对应模板： vod_info.html中的相关
 	$arr=array(
 		array('a'=>'hide','c'=>$valarr['d_hide'],'n'=>array('显示','隐藏'),'v'=>array(0,1)),
 		array('a'=>'level','c'=>$valarr['d_level'],'n'=>array('推荐1','推荐2','推荐3','推荐4','推荐5'),'v'=>array(1,2,3,4,5)),
-		array('a'=>'type','c'=>$valarr['d_type'],'n'=>$typearrn,'v'=>$typearrv),
+		array('a'=>'cata','c'=>0,'n'=>$pidarrn,'v'=>$pidarrv), //类别的选择框不需要指明那个被选中，所以将其 'c'设为0
 		array('a'=>'group','c'=>$valarr['d_usergroup'],'n'=>$grouparrn,'v'=>$grouparrv),
 		array('a'=>'area','c'=>$valarr['d_area'],'n'=>$areaarr,'v'=>$areaarr),
-		array('a'=>'lang','c'=>$valarr['d_lang'],'n'=>$langarr,'v'=>$langarr)
+		array('a'=>'lang','c'=>$valarr['d_lang'],'n'=>$langarr,'v'=>$langarr),
+        array('a'=>'type','c'=>$valarr['d_type'], 'n'=>$typearrn, 'v'=>$typearrv)
 	);
 	
 	foreach($arr as $a){
@@ -1559,7 +1609,7 @@ elseif($method=='info')  //同步参见对应模板： vod_info.html中的相关
 	unset($colarr);
 	unset($valarr);
 	unset($grouparrn);
-	unset($typearr);
+	unset($pidarr);
 	unset($areaarr);
 	unset($langarr);
 }

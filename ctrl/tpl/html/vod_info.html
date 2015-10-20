@@ -3,7 +3,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=7" />
-<title>视频信息 - 苹果CMS</title>
+<title>视频信息 - 萌系管理系统</title>
 <link rel="stylesheet" type="text/css" href="tpl/images/style.css" />
 <link rel="stylesheet" type="text/css" href="../images/jq/jquery.webox.css" />
 <script type="text/javascript" src="../js/jquery.js"></script>
@@ -16,16 +16,20 @@
 <script language="javascript" src="editor/xheditor_lang/zh-cn.js"></script>
 <script language="javascript">
 $(function(){
+    //jquery.validate.js jquery的验证框架， 不过好像只能针对‘表单’。
     //提交时限定 xx必须填写
+    // 涉及的字段都是 name属性， 表单在提交时也是基于 name属性，否则无法提交
 	$("#form1").validate({
 		rules:{
 			d_name:{
+				required:true       //必输字段
+			},
+            catachk:{           //依据隐藏的文本框的内容来判断是否选择分类
+                required:true
+            },
+			d_type:{
 				required:true
 			}
-//            ,
-//			d_type:{
-//				required:true
-//			}
 		}
 	});
 	$("#btnRndHits").click(function(){
@@ -131,21 +135,23 @@ function addPid(id, name){
     based on _pidsData
  */
 function updatePids(){
-    $("#div_pids").html('');
+    $("#div_pids").html('<input id="catachk" name="catachk"  type="hidden"/>');
+    $("#catachk").val(''); //先清空
     //console.log("length:"+_pidsData.length);
     if(_pidsData.length>0){
         //console.log(_pidsData);
         $.each(_pidsData, function(i,row){
             chk =  row.chk=='true' ? 'checked' : '';
+            $("#catachk").val('1');
             $("#div_pids").append('<input type="checkbox" name="d_pids[]" value="'+row.id+'" '+chk+' onclick="delPid(this.value)" />' +'<font color="#FF0000">'+row.name+'</font>');
         });
     }
     //设置select 选中的索引：
     //即 重设状态
-    $("#d_pids").get(0).selectedIndex=0;
+    $("#d_pid").get(0).selectedIndex=0;
 }
 
-var _pidsData; //存储当前的影片所属的分类信息(json对象)
+var _pidsData = JSON.parse('[]'); //存储当前的影片所属的分类信息(json对象)
 
 function getPids(id, pids){ //
     if(id!=""){
@@ -157,6 +163,7 @@ function getPids(id, pids){ //
             timeout: 3000,
             success:function(r){
                 _pidsData = r;
+                //alert(JSON.stringify(_pidsData));
                 updatePids();
             }
         });
@@ -192,16 +199,30 @@ function showUpload(n){
         <!--  注意： 代表分类信息的列d_type，变更为现在的 d_pids(字符串组合)， d_type的作用暂未定  --->
     <td width="100" class="h1">所属分类：</td>
     <td>
-        <div id="div_pids" ></div>
+        <div id="div_pids" name="div_pids">
+        </div>
         <script type="text/javascript">getPids('{d_id}', '{d_pids}')</script> <!-- d_pids为 vod表中纪录的该条目所属分类-->
-        <select id="d_pids"  onchange="addPid(this.options[this.options.selectedIndex].value,this.options[this.options.selectedIndex].text);" >
+        <select id="d_pid"  onchange="addPid(this.options[this.options.selectedIndex].value,this.options[this.options.selectedIndex].text);" >
             <option value="">请选择分类</option>
-            <!-- BEGIN list_type -->
+            <!-- BEGIN list_cata -->
             <option value="{v}" {c}>{n}</option>
-            <!-- END list_type -->
+            <!-- END list_cata -->
         </select>
     </td>
     </tr>
+
+    <tr>
+        <td width="100" class="h1">资源类型：</td>
+        <td>
+            <select id="d_type" name="d_type">
+                <option value="">请选择类型</option>
+                <!-- BEGIN list_type -->
+                <option value="{v}" {c}>{n}</option>
+                <!-- END list_type -->
+            </select>
+        </td>
+    </tr>
+
 
 	<tr>
 	<td width="100" class="hl">参数：</td>
@@ -340,7 +361,7 @@ function showUpload(n){
         若 nanme的值以'[]'结尾，则其代表数组，表单处理时的数据传递方式为数组
     --->
     <tbody id="ep_title">
-    <tr><td>&nbsp;分集标题&图片:</td>
+    <tr><td>&nbsp;分集标题&图片:<br>&nbsp;&nbsp;&nbsp;&nbsp;(可空)</td>
         <td>
             <textarea id='epname' name='epname' style='width:25%;height:150px;'>{epname}</textarea>
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;

@@ -1,0 +1,149 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=7" />
+<title>视频分类管理 - 萌系管理系统</title>
+<link rel="stylesheet" type="text/css" href="tpl/images/style.css" />
+<script type="text/javascript" src="../js/jquery.js"></script>
+<script type="text/javascript" src="../js/jq/jquery.cookie.js"></script>
+<script type="text/javascript" src="../js/jq/jquery.validate.js"></script>
+<script type="text/javascript" src="tpl/js/adm.js"></script>
+<script language="javascript">
+$(function(){
+
+    //底部的删除按钮
+    //和每个条目后面的删除有一丁点儿区别，这儿是post的
+    //尾部的删除是get
+	$("#btnDel").click(function(){
+		if(checkCount('t_id[]')==0){alert("请至少选择一个数据");return;}
+		if(confirm('确定要删除吗')){
+			$("#form1").attr("action","admin_data.php?ac=del&flag=batch&tab=vod_restype");
+			$("#form1").submit();
+		}
+	});
+	$("#btnAdd").click(function(){
+		//location.href='?m=vod-catainfo';
+        $("#FloatDIV").show(); //显示浮动框
+	});
+
+    $("#add").click(function(){
+        _id = $("#_id").val().trim();
+        _name = $("#_name").val().trim();
+        if(_id=='' || _name==''){
+            alert("数据不合法");
+            return;
+        }
+        else if(isNaN(_id)){
+            //如果不是数字
+            alert("确保id为数字");
+            return;
+        }
+
+        $.ajax({
+            type: 'get',
+            cache: false,
+            dataType: 'json',
+            url: "admin_data.php?ac=save&flag=add&tab=vod_restype&t_id="+_id+"&t_name="+_name,
+            timeout: 3000,
+            success:function(r){
+                if(r.status == 'ok'){
+                    alert('修改成功!');
+                    $("#FloatDIV").hide();
+                    document.location.reload();
+                }
+                else{
+                    alert('修改失败');
+                }
+            }
+        });
+    });
+
+});
+
+    //编辑
+    function edit(oid){
+        elem_id = document.getElementsByName("t_id"+oid)[0];
+        elem_name = document.getElementsByName("t_name"+oid)[0]
+        id = elem_id.value;
+        name = elem_name.value;
+
+        $.ajax({
+            type: 'get',
+            cache: false,
+            dataType: 'json',
+            url: "admin_data.php?ac=save&flag=edit&tab=vod_restype&orgid="+oid+"&t_id="+id+"&t_name="+name,
+            timeout: 3000,
+            success:function(r){
+                if(r.status == 'ok'){
+                    alert('修改成功!');
+                }
+                else{
+                    alert('修改失败');
+                }
+                document.location.reload();
+            }
+        });
+    }
+</script>
+</head>
+<body>
+
+
+
+<form method="POST" name="form1" id="form1">
+<table class="tb">
+	<tr>
+		<th width="60">编号</th>
+        <th width="60">ID</th>
+		<th width="180">名称</th>
+        <th width="80"> </th>
+		<th width="200">操作</th>
+	</tr>
+<!-- IF isnull -->
+<tr><td colspan="9" align="center">未查询到任何数据</td></tr>
+<!-- ELSE isnull -->
+	<!-- BEGIN list_restype -->
+	<tr>
+    	<td><input name="t_id[]" type="checkbox" value="{t_id}" />{t_id}</td>
+      	<td><input class="w50" type="text" name="t_id{t_id}" value="{t_id}"></td>
+      	<td><input class="w90" type="text" name="t_name{t_id}" value="{t_name}"></td>
+        <td>   </td>
+      	<td>
+
+	    <a href="#" onClick="edit({t_id});" >修改</a> |
+	    <a href="admin_data.php?ac=del&tab=vod_restype&t_id={t_id}" onClick="return confirm('确定要删除吗?');">删除</a>
+	    </td>
+	</tr>
+	<!-- END list_restype -->
+<!-- ENDIF isnull -->
+
+	<tr><td colspan="9">
+    <input type="button" id="btnChkAll" value="全选" class="input" onClick="checkAll('t_id[]');">
+    <input type="button" id="btnChkOther" value="反选" class="input" onClick="checkOther('t_id[]');">
+	<input type="button" value="添加" id="btnAdd" class="input" />
+	<input type="button" value="删除" id="btnDel" class="input" />
+
+    </td></tr>
+</table>
+</form>
+
+<div id="FloatDIV" style="display:none; border-right: activeborder 1px solid; border-top: activeborder 1px solid; border-left: activeborder 1px solid; border-bottom: activeborder 1px solid;">
+    <br>    <br>
+    <table>
+        <tr>
+            <th >编号</th>
+            <th  >名称</th>
+            <th ></th>
+        </tr>
+        <tr>
+            <td><input type="text" id="_id" value=""/></td>
+            <td><input type="text" id="_name" value=""/></td>
+            <td><input type="button" id="add" value="添加"/> </td>
+        </tr>
+    </table>
+</div>
+
+{foot}
+</body>
+</html>

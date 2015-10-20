@@ -69,6 +69,7 @@ class AppDb
 		$this->sql_qc++;
 		$sql = str_replace("{pre}",$GLOBALS['MAC']['db']['tablepre'],$sql);
 		//echo $sql."<br>";
+
 		//exit($sql);
 		return mysql_query($sql, $this->sql_id);
 	}
@@ -202,7 +203,7 @@ class AppDb
 				$rc=true;
 			}
 			$sql = " INSERT INTO " . $tabName." (".$sqlcol.") VALUES(".$sqlval.")" ;
-			//echo $sql."<br>";exit;
+			//exit($sql."<br>");
 			$res = $this->query($sql);
 			if($res){
 				//echo "ok";
@@ -233,7 +234,7 @@ class AppDb
 				$rc=true;
 			}
 			$sql = " UPDATE " . $tabName." SET ".$sqlval." WHERE ".$KeyStr."";
-			//echo $sql."<br>";
+			//exit( $sql."<br>");
 			$res = $this->query($sql);
 			if($res){
 				//echo "ok";

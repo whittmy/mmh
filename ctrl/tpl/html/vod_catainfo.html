@@ -3,7 +3,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=7" />
-<title>游戏分类信息 - 萌系管理系统</title>
+<title>视频分类信息 - 萌系管理系统</title>
 <link rel="stylesheet" type="text/css" href="tpl/images/style.css" />
 <link rel="stylesheet" type="text/css" href="../images/jq/jquery.webox.css" />
 <script type="text/javascript" src="../js/jquery.js"></script>
@@ -20,11 +20,11 @@ $(function(){
 </script>
 </head>
 <body>
-<form action="admin_data.php?ac=save&tab=game_type" method="post" name="form1" id="form1">
+<form action="admin_data.php?ac=save&tab=vod_cata" method="post" name="form1" id="form1">
 <input id="t_id" name="t_id" type="hidden" value="{t_id}">
 <input id="flag" name="flag" type="hidden" value="{flag}">
 <input id="backurl" name="backurl" type="hidden" value="{backurl}">
-<div class="toptit">游戏分类信息</div>
+<div class="toptit">视频分类信息</div>
 <table class="tbinfo pleft">
 	<tr>
 	<td width="100" class="hl">父级分类：</td>
@@ -58,7 +58,7 @@ $(function(){
 	</tr>
 	<tr>
 	<td>内容模板：</td>
-	<td><input type="text" id="t_tpl_game" name="t_tpl_game" size="50" value="{t_tpl_game}" />
+	<td><input type="text" id="t_tpl_vod" name="t_tpl_vod" size="50" value="{t_tpl_vod}" />
 	</td>
 	</tr>
 	<tr>

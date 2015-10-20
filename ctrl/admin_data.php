@@ -57,6 +57,9 @@ else if($ac=='save')
 	$ismake=false;
 	$js='';
 	$backurl='';
+
+    $msg_diy = '';
+
 	
 	switch($tab)
 	{
@@ -82,6 +85,17 @@ else if($ac=='save')
 			$where = "t_id=".$id;
 			$upcache=true;
 			break;
+        case "vod_restype":
+            $id = be("all", "orgid");
+            $t_id = be("all", "t_id");
+            $t_name = be("all", "t_name");
+            //exit("$id---$t_id---$t_name");
+            $colarr = array('t_id', 't_name');
+            $valarr = array('t_id'=>$t_id, 't_name'=>$t_name);
+            $where = "t_id=".$id;
+            $upcache = true;
+            $msg_diy = 'sss';
+            break;
 		case "vod_class" :
 			$id = be("all","c_id");
 			$colarr = array("c_name","c_sort","c_pid");
@@ -478,46 +492,17 @@ else if($ac=='save')
     $dbOpOk = true;
 
     if($flag=="add" || $flag=="edit"){
-        $db->query("BEGIN"); //>>>>>>>>>>
+        //>>>>>>>>>> 事务开始
+        $db->query("BEGIN");
 
-        $res1 = false;
+        $res1 = false; $res2 = false; //针对vod
         $res2 = false;
-        $res2 = false;
-
-        //先删除所属分类
-        $res1 = $db->query("delete from {pre}$tb_cls where r_did=$id");
-//        if($res1){
-//            echo 'res1 is true<br>';
-//        }
-
-        //再根据d_pids的值进行插入
-        $pidarr = explode(',', $valarr['d_pids']);
-        foreach($pidarr as $pid){
-            $pid = trim($pid);
-            if(strlen($pid) > 0){
-                if($sql==null){
-                    $sql = "insert into {pre}$tb_cls (r_cid, r_did) values ";
-                }
-                $sql .= "($pid, $id),";
-            }
-        }
-        if(!empty($sql)){
-            $sql = rtrim($sql, ', ');
-            //exit($sql);
-            $res2 = $db->query($sql);
-        }
-        else{
-            $res2  = true;
-        }
-
-//        if($res2){
-//            echo 'res2 is true';
-//        }
 
         if($flag=="add"){
             $res3 = $db->Add('{pre}'.$tab,$colarr,$valarr);
+            $id=$db->insert_id(); //rocking
             if($ismake){
-                $id=$db->insert_id();
+                //rocking $id=$db->insert_id();
                 $js = str_replace('{id}',$id,$js);
             }
         }
@@ -529,10 +514,41 @@ else if($ac=='save')
             }
         }
 
-//        if($res3){
-//            echo "res3 is true";
-//        }
-//        exit;
+
+        //不管是 add还是 edit,此时的 $id 都不再为空(假定 $res3执行无误)
+
+        //这是仅针对 vod表操作时才会涉及到的 分类表更改
+        if($tab == "vod") {
+            //先删除所属分类
+            echo("delete from {pre}$tb_cls where r_did=$id <br>");
+            $res1 = $db->query("delete from {pre}$tb_cls where r_did=$id");
+
+            //再根据d_pids的值进行插入  !!!!!!!!! 若是 新增，则此时r_did还不存在
+            $pidarr = explode(',', $valarr['d_pids']);
+            foreach ($pidarr as $pid) {
+                $pid = trim($pid);
+                if (strlen($pid) > 0) {
+                    if ($sql == null) {
+                        $sql = "insert into {pre}$tb_cls (r_cid, r_did) values ";
+                    }
+                    $sql .= "($pid, $id),";
+                }
+            }
+            if (!empty($sql)) {
+                $sql = rtrim($sql, ', ');
+                echo $sql.'<br>';
+                $res2 = $db->query($sql);
+            } else {
+                $res2 = true;
+            }
+        }
+        else{
+            //非vod表的操作，默认为 true
+            $res1 = true;
+            $res2 = true;
+        }
+
+
         if($res1 && $res2 && $res3){
             mysql_query("COMMIT");
             $dbOpOk = true;
@@ -545,7 +561,16 @@ else if($ac=='save')
         //<<<<<<<<<<<<<<<<<<<<<<
     }
 
+    //exit("$res1----$res2---$res3");
+
     if($upcache && $dbOpOk){ updateCacheFile(); }
+
+    if(!empty($msg_diy)){
+        if($dbOpOk)
+            exit('{"status":"ok"}');
+        else
+            exit('{"status":"error"}');
+    }
 
     if($dbOpOk)
         showMsg('数据已保存'.$js,$backurl);
@@ -554,7 +579,7 @@ else if($ac=='save')
 }
 
 else if($ac=='del')
-{
+{   // 删除操作
 	$tab = be("all","tab");
 	$flag = be("all","flag");
 	$upcache=false;
@@ -589,7 +614,14 @@ else if($ac=='del')
 				$ids= be("arr","l_id");
 			}
 			break;
-		case "vod_cata":
+        case "vod_restype":
+            $col="t_id";
+            $ids = be("get","t_id");
+
+
+
+            break;
+        case "vod_cata":
 			$col="t_id";
 			$ids = be("get","t_id");
 			if(isN($ids)){
@@ -762,7 +794,7 @@ else if($ac=='del')
 			}
 			break;
 	}
-	if (!isN($ids)) { $db->Delete('{pre}'.$tab, $col." in (".$ids.")"); }
+	if (!isN($ids)) {$db->Delete('{pre}'.$tab, $col." in (".$ids.")"); }
 	if ($upcache){ updateCacheFile(); }
 	redirect ( getReferer() );
 }
@@ -1008,8 +1040,11 @@ elseif($ac=='hide')
 
 elseif($ac=='shift')
 {
+    //该功能 先屏蔽，不用
+    //对应 资源分类下面的‘转移’按钮，可以将选中的类别下的所有资源移动到指定类别下
 	if ($show ==1){
-		if(strpos($tab,'_type')){
+        //首次获取 目标分类的相关资源(html)
+		if(strpos($tab,'_cata')){
 			$selstr=makeSelectAll("{pre}".$tab,"t_id","t_name","t_pid","t_sort",0,"","&nbsp;|&nbsp;&nbsp;","");
 		}
 		else{
@@ -1018,6 +1053,12 @@ elseif($ac=='shift')
 		echo '<select id="val" name="val"><option value="0">请选择目标</option>' . $selstr .'</select><input type="button" value="确定" onclick="ajaxsubmit(\''.$ac.'\',\''.$tab.'\',\''.$colid.'\',\''.$col.'\',\''.$id.'\');" class=input> <input type="button" value="取消" onclick="closew();" class=input>';
 	}
 	else{
+        //http://localhost/mmh/ctrl/admin_data.php?ac=shift&tab=vod_cata&colid=t_id&col=&id=25345,25346&show=2&val=25307&val2=undefined
+        //用户选择目标类别之后的数据更新请求
+        //！！！！！！！！！！
+        //但是从下面的代码看，好像是将 某选择分类下的所有资源转到指定类别下面
+        //在我现有的架构中比较麻烦该功能先屏蔽
+
 		if(strpos(','.$tab,'vod')) { $tab2='vod'; } 
 		elseif(strpos(','.$tab,'game')){ $tab2='game'; }
 		else{ $tab2='art'; }
