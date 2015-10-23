@@ -50,7 +50,6 @@ else if($ac=='getinfo')
 
 else if($ac=='save')
 {
-	$tab = be("all","tab");
     $tb_cls = be("all", "tb_cls");
 	$flag = be("all","flag");
 	$upcache=false;
@@ -122,7 +121,7 @@ else if($ac=='save')
 			$where = "t_id=".$id;
 			$upcache=true;
 			break;
-		
+
 		case "game_type" :
 			$id = be("all","t_id");
 			$colarr = array("t_name","t_enname","t_sort","t_pid","t_tpl",'t_tpl_list',"t_tpl_game","t_tpl_play","t_tpl_down","t_key","t_des","t_title");
@@ -580,8 +579,6 @@ else if($ac=='save')
 
 else if($ac=='del')
 {   // 删除操作
-	$tab = be("all","tab");
-	$flag = be("all","flag");
 	$upcache=false;
 	switch($tab)
 	{
@@ -801,14 +798,167 @@ else if($ac=='del')
 
 elseif($ac=='clear')
 {
-	$sql='truncate TABLE {pre}'.$tab;
+    $sql='truncate TABLE {pre}'.$tab;
 	$db->query($sql);
 	redirect( getReferer() );
+}
+else if($ac=='device_res_op'){
+    //$flag / $tab
+    switch($flag) {
+        case 'add_top':
+            $t_id = be("all", "t_id");
+            $t_name = be("all", "t_name");
+
+            if(strlen($t_id) == 0){
+                $colarr = array('t_name');
+                $valarr = array('t_name'=>$t_name);
+            }
+            else{
+                $colarr = array('t_id', 't_name');
+                $valarr = array('t_id'=>$t_id, 't_name'=>$t_name);
+            }
+
+            $res = $db->Add('{pre}'.$tab,$colarr,$valarr);
+            if($res)
+                exit('{"status":"ok"}');
+            else
+                exit('{"status":"error"}');
+
+            break;
+        case 'add_sub':
+            // 对顶层类别进行扩展 子类/全部
+            $t_belong = be("all", "t_belong");
+            $alias = trim(be('all', 'alias'));
+            $t_id = be("all", 't_id');
+            $idstr = trim(be("all", 'ids'));
+            if(strlen($idstr) == 0
+                || ($t_belong=='sub'&&strlen($alias)==0)
+                || strlen($t_id) == 0){
+                exit('{"status":"失败:有空参数"}');
+            }
+
+            $sql = "select * from {pre}$tab where t_id=$t_id";
+            $res = $db->query($sql);
+            $sql = '';
+            if($row=$db->fetch_array($res)){
+                if($t_belong == 'sub'){
+                    $t_subdes_arr = explode(',', trim($row['t_sub_desc'], ', '));
+                    if(in_array($alias, $t_subdes_arr)){
+                        exit('{"status":" 别名 \''.$alias.'\' 已存在"}');
+                    }
+                    array_push($t_subdes_arr, $alias);
+                    $t_subdes_str = trim(implode(',', $t_subdes_arr), ', ');
+
+                    $t_subcls_str = trim($row['t_subclses'], ', ');
+                    $t_subcls_arr = explode(',', $t_subcls_str);
+                    if(in_array($idstr, $t_subcls_arr)){
+                        exit('{"status":" 你选择的类别已存在"}');
+                    }
+                    $t_subcls_arr = array_unique($t_subcls_arr);
+                    array_push($t_subcls_arr, $idstr);
+                    $t_subcls_str = trim(implode(',', $t_subcls_arr), ', ');
+
+                    $sql = "update {pre}$tab set t_subclses='$t_subcls_str', t_sub_desc='$t_subdes_str' where t_id=$t_id";
+                }
+                else if($t_belong == 'all'){
+                    $t_allcls_str = trim($row['t_allclses'].','.$idstr, ', ');
+                    $t_allcls_str = str_replace('_', ',', $t_allcls_str);
+                    $t_allcls_arr = explode(',', $t_allcls_str);
+                    $t_allcls_arr = array_unique($t_allcls_arr);
+                    $t_allcls_str = trim(implode(',', $t_allcls_arr), ', ');
+
+                    $sql = "update {pre}$tab set t_allclses='$t_allcls_str' where t_id=$t_id";
+                }
+            }
+            //exit($sql);
+            if(!empty($sql)){
+                $res = $db->query($sql);
+                if($res)
+                    exit('{"status":"ok"}');
+            }
+            exit('{"status":"error"}');
+            break;
+        case 'clear_sub':
+            //情况vod_device_res_mgr 表下面某条目 子类/全部 下面的所有内容。
+            $t_id= be("all", 't_id');
+            $t_belong = be('all', 't_belong');
+            if($t_belong == 'all')
+                $sql = "update {pre}$tab set t_allclses='', t_all_desc='' where t_id=$t_id";
+            else if($t_belong == 'sub')
+                $sql = "update {pre}$tab set t_subclses='', t_sub_desc='' where t_id=$t_id";
+
+            if(!empty($sql))
+                $db->query($sql);
+            redirect(getReferer());
+            break;
+        case 'del_top':
+            $t_id = be('all', 't_id');
+            if(is_numeric($t_id)){
+                $sql = "delete from {pre}$tab where t_id=$t_id";
+                $db->query($sql);
+
+                redirect(getReferer());
+            }
+            break;
+        case 'del_item':
+            //admin_data.php?ac=set&tab=vod_device_res_mgr&t_pid=3&t_id=25340&t_belong=sub
+            $t_pid = be('all', 't_pid');
+            $t_id = be('all', 't_id'); //可能是 xx_yy 的形式
+            $t_belong = be('all', 't_belong');
+            if($t_belong == 'all'){
+                $sql = "select t_allclses from {pre}$tab where t_id=$t_pid";
+                $rs = $db->query($sql);
+                $sql = '';
+                while ($row = $db->fetch_array($rs)){
+                    $t_allclses = $row['t_allclses'];
+                    $t_allclses = str_replace($t_id, '', $t_allclses);
+                    $t_allclses = str_replace('_,', ',', $t_allclses);
+                    $t_allclses = str_replace(',_', ',', $t_allclses);
+                    $t_allclses = str_replace(',,', ',', $t_allclses);
+                    $t_allclses = trim($t_allclses, '_,');
+
+                    $sql = "update {pre}$tab set t_allclses='$t_allclses' where t_id=$t_pid";
+                    break;
+                }
+            }
+            elseif($t_belong == 'sub'){
+                $sql = "select t_subclses, t_sub_desc from {pre}$tab where t_id=$t_pid";
+                $rs = $db->query($sql);
+                $sql = '';
+                while ($row = $db->fetch_array($rs)){
+                    $t_sub_desc = $row['t_sub_desc'];
+                    $t_sub_descArr = explode(',', $t_sub_desc);
+
+                    $t_subclses = $row['t_subclses'];
+                    $t_subclsesArr = explode(',', $t_subclses);
+
+                    $rt = array_keys($t_subclsesArr, $t_id);
+                    if(count($rt) > 0){
+                        $idx = $rt[0];
+                        array_splice($t_subclsesArr,$idx,1);
+                        array_splice($t_sub_descArr,$idx,1);
+                    }
+
+                    $t_subclses = implode(',', $t_subclsesArr);
+                    $t_sub_desc = implode(',', $t_sub_descArr);
+
+                    $sql = "update {pre}$tab set t_subclses='$t_subclses', t_sub_desc='$t_sub_desc' where t_id=$t_pid";
+                    break;
+                }
+            }
+
+            if(!empty($sql))
+               $db->query($sql);
+
+            redirect( getReferer() );
+            break;
+    }
+
 }
 
 elseif($ac=='set')
 {
-	$sql='UPDATE {pre}'.$tab.' set '.$col.'='.$val.' WHERE '.$colid .' IN('.$id.')';
+    $sql='UPDATE {pre}'.$tab.' set '.$col.'='.$val.' WHERE '.$colid .' IN('.$id.')';
 	$db->query($sql);
 	redirect( getReferer() );
 }

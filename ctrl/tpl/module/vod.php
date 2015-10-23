@@ -94,6 +94,186 @@ if($method=='cata'){
 	unset($rs);
 }
 
+elseif($method == 'device_res_mgr'){
+    //先设置其对应的模板文件, 这个'main'不曾在模板中出现过
+    $plt->set_file('main', $ac.'_'.$method.'.html');
+
+    //分类处理>>>>>>>>>
+    $pidarr = $MAC_CACHE['vodcata'];
+    $pidarrn = array();
+    $pidarrv = array();
+    foreach($pidarr as $arr1){
+        $s='&nbsp;|—';
+        if($arr1['t_pid']==0){
+            array_push($pidarrn,$s.$arr1['t_name']);
+            array_push($pidarrv,$arr1['t_id']);
+            foreach($pidarr as $arr2){
+                if($arr1['t_id']==$arr2['t_pid']){
+                    $s='&nbsp;|&nbsp;&nbsp;&nbsp;|—';
+                    array_push($pidarrn,$s.$arr2['t_name']);
+                    array_push($pidarrv,$arr2['t_id']);
+                }
+            }
+        }
+    }
+
+    $plt->set_block('main', 'list_cata', 'rows_cata');
+
+    for($i=0;$i<count($pidarrn);$i++){
+        $n = $pidarrn[$i];
+        $v = $pidarrv[$i];
+        $plt->set_var('v', $v );
+        $plt->set_var('n', $n );
+        $plt->parse('rows_cata','list_cata',true);
+    }
+    unset($pidarrn);
+    unset($pidarrv);
+    //<<<<<<<<<<
+
+
+
+    //处理 list_device_res_mgr模块
+    $rn='device_res_mgr';
+    $plt->set_block('main', 'list_'.$rn, 'rows_'.$rn);
+
+    $colarr = array('t_id', 't_name', 't_span');
+    $valarr = array();
+
+    $sql = 'select * from {pre}vod_device_res_mgr order by t_id';
+    $rs = $db->query($sql);
+
+    ///$t_span='';
+    $hadrslt = false;
+    while ($row = $db ->fetch_array($rs)){
+        $hadrslt = true;
+        $t_span='';
+        foreach($colarr as $col){
+            $valarr[$col] = $row[$col];   //每次外循环，数组的元素数是不变的，如果键存在则替换
+        }
+        $valarr['t_span'] = $t_span;
+
+        //设置模板里面的相关的字段
+        foreach($valarr as $key=>$val){
+            $plt->set_var($key, $val);
+        }
+
+        //处理完一行就显示一行，将该句理解为，添加一行并显示, 多次执行就添加多行，当然若有数据修改，则显示不同的数据
+        $plt->parse('rows_'.$rn,'list_'.$rn,true);
+
+        //set_if要在parse之后调用，方可影响到parse新增的行
+        //set_if处理 模板中 <!-- IF lv0 --> true-case <!-- ELSE lv0 --> false-case <!-- ENDIF lv0 -->部分的条件语句。以控制是否显示
+        //若lv0为true,实际显示 false-case部分的代码
+        //!!!! set_if 好像仅仅对刚刚新增的条目中的设置有效!!!!
+        //另外:在模板中尽可能少用else的控制，因为显得代码多，尽可能分解为多个if条件，如上面的if-else可以分解为两个条件， IF lv0、IF lv1(只是举例，和下面无关)
+        //条件部分的语句，如果不人为去设置，其默认都显示
+        $plt->set_if('rows_'.$rn,'lv0',true);
+        $plt->set_if('rows_'.$rn,'lv1',false);
+        $plt->set_if('rows_'.$rn,'lv2',false);
+        $plt->set_if('rows_'.$rn,'lv2_sub',false);
+        unset($valarr);
+
+
+        ///>>>>>>>>>>>>>>>>>>>>  添加附属行(如子类、全部) lv1   >>>>>>>>>>>>>>>>>
+        $lv1Arr = array('sub'=>'子类', 'all'=>'全部');
+        $cataArr = $MAC_CACHE['vodcata'];
+
+        foreach($lv1Arr as $k1=>$v1){
+            $valarr = array();
+
+            //自动添加其下面的一行
+            $t_span = '&nbsp;&nbsp;&nbsp;&nbsp;';
+
+            $valarr['t_parent'] = $row['t_name'];
+            $valarr['t_id'] = '';
+            $valarr['t_name'] ='<b>'. $v1.'</b>';//'子类';
+            $valarr['t_span'] = $t_span;
+            $valarr['t_belong'] = $k1;
+            $valarr['t_iid'] = $row['t_id'];
+            foreach($valarr as $key=>$val){
+                $plt->set_var($key, $val);
+            }
+            $plt->parse('rows_'.$rn,'list_'.$rn,true);
+            $plt->set_if('rows_'.$rn,'lv0',false);
+            $plt->set_if('rows_'.$rn,'lv1',true);
+            $plt->set_if('rows_'.$rn,'lv2',false);
+            $plt->set_if('rows_'.$rn,'lv2_sub',false);
+
+            //>>>>>>>>>>>>>> lv2 sub >>>>>>>>>>>>>>>>>
+            $t_span = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+
+            if($k1 == 'sub'){
+                $t_clses = $row['t_subclses'];
+                $t_desc = $row['t_sub_desc'];
+            }
+            else if($k1 == 'all'){
+                $t_clses = $row['t_allclses'];
+                $t_desc = $row['t_all_desc'];
+            }
+
+            if($k1 == 'all'){
+                $t_clses =  str_replace('_', ',', $t_clses);
+                $t_descArr =  str_replace('_', ',', $t_descArr);
+            }
+            $t_clsesArr = explode(',', $t_clses);
+            $t_descArr = explode(',', $t_desc);
+
+            //解析ids的数组
+            foreach($t_clsesArr as $k=>$v){
+                $namestr = '';
+                if(is_numeric($v)){
+                    $namestr = $cataArr[$v]['t_name'];
+                }
+                else{
+                    if($v==' ' || strlen($v)==0){
+                        continue;
+                    }
+                    $idarr = explode('_', $v);
+                    foreach($idarr as $id){
+                        $namestr = $namestr. $cataArr[$id]['t_name'].'_';
+                    }
+                    $namestr = trim($namestr, '_');
+                }
+                if(!empty($namestr)){
+                    $valarr['t_id'] = $v;
+                    $valarr['t_name'] = $namestr;
+                    $valarr['t_alias'] = $t_descArr[$k];
+                    $valarr['t_span'] = $t_span;
+                    $valarr['t_belong'] = $k1;
+
+                    foreach($valarr as $key=>$val){
+                        $plt->set_var($key, $val);
+                    }
+                    $plt->parse('rows_'.$rn,'list_'.$rn,true);
+                    $plt->set_if('rows_'.$rn,'lv0',false);
+                    $plt->set_if('rows_'.$rn,'lv1',false);
+                    $plt->set_if('rows_'.$rn,'lv2',true);
+                    if($k1 == 'sub'){
+                        $plt->set_if('rows_'.$rn,'lv2_sub',true);
+                    }
+                    else{
+                        $plt->set_if('rows_'.$rn,'lv2_sub',false);
+                    }
+                }
+            }
+
+            unset($valarr);
+            unset($t_clsesArr);
+            unset($t_descArr);
+        }
+
+        //>>>>>>>>>>>>>>>> lv1 all >>>>>>>>>>>>>>>>>>>>>
+    }
+
+    if(!$hadrslt)
+        $plt->set_if('main','isnull',true);
+    else
+        $plt->set_if('main','isnull',false);
+
+    unset($colarr);
+    unset($valarr);
+    unset($rs);
+}
+
 elseif($method == 'restype'){
     $plt->set_file('main', $ac.'_'.$method.'.html');
 

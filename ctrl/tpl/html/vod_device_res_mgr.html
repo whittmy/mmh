@@ -1,0 +1,311 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=7" />
+<title>设备资源接口管理 - 萌系管理系统</title>
+<link rel="stylesheet" type="text/css" href="tpl/images/style.css" />
+<script type="text/javascript" src="../js/jquery.js"></script>
+<script type="text/javascript" src="../js/jq/jquery.cookie.js"></script>
+<script type="text/javascript" src="../js/jq/jquery.validate.js"></script>
+<script type="text/javascript" src="tpl/js/adm.js"></script>
+
+<script language="javascript">
+
+// 以下三个是等价的。
+// $(function(){});
+// $(document).ready(function(){});
+// $().ready(function(){});
+
+$(function(){
+    $("#btnAdd").click(function(){
+        $("#FloatDIV").show(); //显示浮动框
+    });
+
+    $("#add").click(function(){
+        _id = $("#_id").val().trim();
+        _name = $("#_name").val().trim();
+        if( _name==''){
+            alert("数据不合法");
+            return;
+        }
+        else if(isNaN(_id)){
+            //如果不是数字
+            alert("确保id为数字");
+            return;
+        }
+
+        $.ajax({
+            type: 'get',
+            cache: false,
+            dataType: 'json',
+            url: "admin_data.php?ac=device_res_op&flag=add_top&tab=vod_device_res_mgr&t_id="+_id+"&t_name="+_name,
+            timeout: 3000,
+            success:function(r){
+                if(r.status == 'ok'){
+                    alert('修改成功!');
+                    $("#FloatDIV").hide();
+                    document.location.reload();
+                }
+                else{
+                    alert('修改失败');
+                }
+            }
+        });
+    });
+
+    //所有class为 addchild 的元素都响应该click事件
+    // #xxx ==> 指代 id
+    //但是注意 $(this) 可以指代 当前触发事件的元素
+    // jquery 获取属性的方法： attr('xx')
+    $(".addchild").click(function () {
+        t_belong = $(this).attr('t_belong');
+        t_id = $(this).attr('t_id');
+        t_parent = $(this).attr('t_parent')
+
+        if(t_belong=='sub'){
+            $("#belong2").html("子类");
+            $("#setalias").attr('disabled', false);
+        }
+        else if(t_belong=='all'){
+            $("#belong2").html("全部");
+            $("#setalias").attr('disabled', true);
+        }
+
+        $("#belong1").html(t_parent);
+        $("#setalias").val('');
+        $("#div_pids").html('<input id="catachk" id="catachk"  type="hidden"/>');
+
+        $("#postit").show();
+    });
+    $("#closedlg").click(function(){
+        $("#postit").hide();
+    });
+
+    $("#btnSave").click(function () {
+        alias = $("#setalias").val().trim();
+        if(t_belong == 'sub'){
+            if(alias.length == 0){
+                alert('别名不能为空');
+                return;
+            }
+        }
+        if(_pidsData.length == 0){
+            alert('请选择分类');
+            return;
+        }
+        idstr = '';
+        $.each(_pidsData, function (i, row) {
+            idstr = idstr + row.id + '_';
+        });
+        idstr = idstr.substring(0, idstr.length-1);
+
+        $.ajax({
+            type: 'get',
+            cache: false,
+            dataType: 'json',
+            url: "admin_data.php?ac=device_res_op&tab=vod_device_res_mgr&flag=add_sub&t_belong="+t_belong+"&ids="+idstr+"&alias="+alias+"&t_id="+t_id,
+            timeout: 3000,
+            success:function(r){
+                if(r.status == 'ok'){
+                    alert('修改成功!');
+                    $("#postit").hide();
+                    document.location.reload();
+                }
+                else{
+                    alert('修改失败:'+ r.status);
+                }
+            }
+        });
+    });
+
+});
+
+</script>
+
+
+<script language="javascript">
+    var _pidsData = JSON.parse('[]'); //存储当前的影片所属的分类信息(json对象)
+
+    //删除item
+    function delPid(id){
+        // alert(id);
+        if(id != ""){
+            if(_pidsData.length>0) {
+                $.each(_pidsData, function (i, row) {
+                    if (row.id == id) {
+                        console.log("delete:"+row.name);
+                        //delete _pidsData[i];  //注意： 删除后长度却不会被改变，
+                        _pidsData.splice(i, 1); //这个没有问题
+                        return false; //相当于 break
+                    }
+                });
+            }
+            updatePids();
+        }
+    }
+
+    //id 为分类对应的数据库id编号
+    //当添加一个后，变生成一个新的复选框分类
+    function addPid(id, name){
+        //alert("xxx");
+        if(id != "" && name!="") {
+            var p = name.indexOf("—");
+            if(p != -1)
+                name = name.substr(p+1);
+
+            //alert(id + ","+  name); //
+            if(_pidsData.length>0){
+                hadexist = false;
+                $.each(_pidsData, function(i,row){
+                    console.log("i="+i+":"+row.id+","+id);
+                    if(row.id == id){
+                        console.log(id+ " had exist");
+                        hadexist = true;
+                        return false; //相当于 break;   return true==continue
+                    }
+                });
+
+                //已存在,则忽略
+                if(hadexist){
+                    updatePids();
+                    return;
+                }
+            }
+            console.log('begin to add item');
+            // json对象添加元素
+            item = {"id":id, "name":name, "chk":'true'};
+            _pidsData.push(item);
+
+            updatePids();
+        }
+    }
+    /*
+     based on _pidsData
+     */
+    function updatePids(){
+        $("#div_pids").html('<input id="catachk" name="catachk"  type="hidden"/>');
+        $("#catachk").val(''); //先清空
+        //console.log("length:"+_pidsData.length);
+        if(_pidsData.length>0){
+            //console.log(_pidsData);
+            $.each(_pidsData, function(i,row){
+                chk =  row.chk=='true' ? 'checked' : '';
+                $("#catachk").val('1');
+                $("#div_pids").append('<input type="checkbox" name="d_pids[]" value="'+row.id+'" '+chk+' onclick="delPid(this.value)" />' +'<font color="#FF0000">'+row.name+'</font>');
+            });
+        }
+        //设置select 选中的索引：
+        //即 重设状态
+        $("#d_pid").get(0).selectedIndex=0;
+    }
+</script>
+
+</head>
+<body>
+
+
+<!-- 浮动添加窗口 由display控制其显示与否 -->
+<div id="postit" style="position:absolute;left:750px;top:240px;width:600px;height:400px; padding:5px; background-color:#fcfdff;border:1px solid black;display:none; z-index:100;cursor:hand;">
+    <div align="right"><b><a href="#" id="closedlg">[关闭]</a></b></div>
+    <p align="center" style="font-size: 15pt"> 添加类别 </p>
+    <br>
+    <table border="0px" align="center" cellspacing="2">
+        <tr>
+            <td align="center">所属:</td>
+            <td><span id="belong1" ></span> - <span id="belong2"></span></td>
+        </tr>
+        <tr>
+            <td width="80" align="center" height="40">别名:</td>
+            <td width="500">&nbsp;<input type="text" id="setalias" value=""/></td>
+        </tr>
+
+        <tr>
+            <td align="center" height="40">包含分类:</td>
+            <td>
+                <div id="div_pids" name="div_pids"></div>
+                &nbsp;<select id="d_pid"  onchange="addPid(this.options[this.options.selectedIndex].value,this.options[this.options.selectedIndex].text);" >
+                    <option value="">请选择分类</option>
+                    <!-- BEGIN list_cata -->
+                    <option value="{v}" >{n}</option>
+                    <!-- END list_cata -->
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td align="center" height="40">&nbsp;&nbsp;&nbsp;&nbsp;<input id="btnSave"  type="button" value=" 保 存 "/>
+           </td>
+        </tr>
+    </table>
+
+
+</div>
+
+<form method="POST" name="form1" id="form1">
+<table class="tb">
+	<tr>
+		<th width="580">编号、名称</th>
+		<th width="180" style="text-align:center">别名</th>
+		<th width="180">操作</th>
+	</tr>
+<!-- IF isnull -->
+<tr><td colspan="9" align="center">未查询到任何数据</td></tr>
+<!-- ELSE isnull -->
+	<!-- BEGIN list_device_res_mgr -->
+	<tr>
+    	<td title="{t_name}">{t_span}
+            <!-- IF lv2 --> |-&nbsp;<!-- ENDIF lv2 -->
+            <!-- IF lv1 -->|-&nbsp;<!-- ENDIF lv1 -->
+            {t_id}
+            <!-- IF lv1 -->
+            <!-- ELSE lv1 -->
+            、
+            <!-- ENDIF lv1 -->{t_name}
+        </td>
+
+
+        <td align="center" >
+            <!-- IF lv2_sub -->
+            <font color="red">{t_alias}</font>
+            <!-- ENDIF lv2_sub --></td>
+
+        <td>
+            <!-- IF lv1 -->
+            <a class="addchild" t_parent="{t_parent}" t_belong="{t_belong}" t_id="{t_iid}"  href="#" style="color:green"> 添加 </a> |
+            <a href="admin_data.php?ac=device_res_op&flag=clear_sub&tab=vod_device_res_mgr&t_id={t_iid}&t_belong={t_belong}" onClick="return confirm('确定要清空吗?');"><font color="green">清空</font></a>
+            <!-- ENDIF lv1 -->
+            <!-- IF lv0 -->
+            <a href="admin_data.php?ac=device_res_op&flag=del_top&tab=vod_device_res_mgr&t_id={t_id}" onClick="return confirm('确定要删除吗?');"><font color=#00ced1>删除</font></a>
+            <!-- ENDIF lv0 -->
+            <!-- IF lv2 -->
+            <a href="admin_data.php?ac=device_res_op&flag=del_item&tab=vod_device_res_mgr&t_pid={t_iid}&t_id={t_id}&t_belong={t_belong}" onClick="return confirm('确定要删除吗?');">删除</a>
+            <!-- ENDIF lv2 -->
+        </td>
+ 	</tr>
+	<!-- END list_device_res_mgr -->
+<!-- ENDIF isnull -->
+	<tr><td colspan="9">
+    <input type="button" id="btnChkAll" value="全选" class="input" onClick="checkAll('t_id[]');">
+    <input type="button" id="btnChkOther" value="反选" class="input" onClick="checkOther('t_id[]');">
+	<input type="button" value="添加" id="btnAdd" class="input" />
+    </td></tr>
+</table>
+</form>
+<div id="FloatDIV" style="display:none; border-right: activeborder 1px solid; border-top: activeborder 1px solid; border-left: activeborder 1px solid; border-bottom: activeborder 1px solid;">
+    <br>    <br>
+    <table>
+        <tr>
+            <th >编号</th>
+            <th  >名称</th>
+            <th ></th>
+        </tr>
+        <tr>
+            <td><input type="text" id="_id" value=""/></td>
+            <td><input type="text" id="_name" value=""/></td>
+            <td><input type="button" id="add" value="添加"/> </td>
+        </tr>
+    </table>
+</div>
+{foot}
+</body>
+</html>
