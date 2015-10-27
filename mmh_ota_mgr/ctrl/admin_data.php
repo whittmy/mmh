@@ -32,10 +32,11 @@
             $upg_url =      isset($_POST['upg_url'])? $_POST['upg_url'] :'';
             
             if(strlen($modelId)==0 
-                || strlen($cur_ver)==0 
+                //|| strlen($cur_ver)==0 
                 || strlen($target_ver)==0
                 || strlen($hash)==0
                 || substr($upg_url, 0, 4)!='http'){
+                    exit('提交内容不完整');
                     return;
                 }
             connect();

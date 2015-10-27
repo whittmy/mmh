@@ -35,17 +35,18 @@
 
 		
 			var patrn=/^\d{2}\.\d{2}\.\d{2}$/; 
-			if(!patrn.exec(cur_ver.value) || !patrn.exec(target_ver.value) ) {
-				alert('版本号格式不正确');
-				//model.focus(); 
-				return false; 			
-			}
-			if(verArr.in_array(cur_ver.value)){
-				alert('填写的版本号已存在')
-				document.getElementById("cur_ver").value = '';
-				document.getElementById("cur_ver").focus(); 
-				return false;	
-			}				
+            if((cur_ver.value!='' && !patrn.exec(cur_ver.value)) || !patrn.exec(target_ver.value) ) {
+                alert('版本号格式不正确');
+                //model.focus(); 
+                return false; 			
+            }
+            if(cur_ver.value != '' && verArr.in_array(cur_ver.value)){
+                alert('填写的版本号已存在')
+                document.getElementById("cur_ver").value = '';
+                document.getElementById("cur_ver").focus(); 
+                return false;	
+            }	
+			
 			
 			//if(iforce === false){
 			//	alert('选择是否强制升级');
@@ -171,11 +172,11 @@
   </tr>
   <tr height="40">
     <td width="11%">适应版本：</td>
-    <td width="89%"><input name="cur_ver" id="cur_ver" type="text" /> 如：02.20.30   (针对该版本进行升级)</td>
+    <td width="89%"><input name="cur_ver" id="cur_ver" type="text" /> 如：02.20.30   (针对该版本进行升级,若全包则忽略)</td>
   </tr>
   <tr height=40>
      <td width="11%">目标版本:</td>
-     <td width="89%"><input name="target_ver" id="target_ver" type="text" /> 如：02.20.30  （升级之后的版本号）</td>
+     <td width="89%"><input name="target_ver" id="target_ver" type="text" /> 如：02.20.30  （升级之后的版本号，必须）</td>
   </tr>
   <tr height=40>
     <td width="11%">大小：</td>
