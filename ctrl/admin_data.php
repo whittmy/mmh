@@ -48,20 +48,15 @@ else if($ac=='getinfo')
 	unset($rs);
 }
 
-else if($ac=='save')
-{
-    $tb_cls = be("all", "tb_cls");
+else if($ac=='save'){
 	$flag = be("all","flag");
 	$upcache=false;
 	$ismake=false;
 	$js='';
 	$backurl='';
-
     $msg_diy = '';
 
-	
-	switch($tab)
-	{
+	switch($tab)	{
 		case "link" :
 			$id = be("all","l_id");
 			$colarr = array("l_name","l_type","l_url","l_sort","l_logo");
@@ -121,7 +116,6 @@ else if($ac=='save')
 			$where = "t_id=".$id;
 			$upcache=true;
 			break;
-
 		case "game_type" :
 			$id = be("all","t_id");
 			$colarr = array("t_name","t_enname","t_sort","t_pid","t_tpl",'t_tpl_list',"t_tpl_game","t_tpl_play","t_tpl_down","t_key","t_des","t_title");
@@ -160,7 +154,6 @@ else if($ac=='save')
 			$where = "t_id=".$id;
 			$upcache=true;
 			break;			
-		
 		case "art_type" :
 			$id = be("all","t_id");
 			$colarr = array("t_name","t_enname","t_sort","t_pid","t_tpl",'t_tpl_list',"t_tpl_art","t_key","t_des","t_title");
@@ -342,20 +335,19 @@ else if($ac=='save')
 		    }
 			break;
 		case "vod":
-            //表单数据处理
-            //很多知识点
-
-			$id = be("all","d_id");
+            //表单数据处理   很多知识点
+            //增加与删除都牵涉3个表， vod, vod_libs, r表
+            $tb_r = be("all", "tb_r");
+            $id = be("all","d_id");
 			$uptag = be("all","uptag");
 			$uptime = be("all","uptime");
 
             //将要更新的一些列，都放在该数组内
-			$colarr=array('d_name', 'd_subname', 'd_pids', 'd_epname','d_eppic', 'd_enname', 'd_letter', 'd_color', 'd_pic', 'd_picthumb', 'd_picslide', 'd_starring', 'd_directed', 'd_tag', 'd_remarks', 'd_area', 'd_lang', 'd_year', 'd_type', 'd_type_expand' , 'd_class', 'd_topic', 'd_hide', 'd_lock', 'd_state', 'd_level', 'd_usergroup', 'd_stint', 'd_stintdown', 'd_hits', 'd_dayhits', 'd_weekhits', 'd_monthhits', 'd_duration', 'd_up', 'd_down', 'd_score','d_scoreall', 'd_scorenum', 'd_addtime', 'd_time', 'd_hitstime', 'd_maketime', 'd_content', 'd_playfrom', 'd_playserver', 'd_playnote', 'd_playurl', 'd_downfrom', 'd_downserver', 'd_downnote', 'd_downurl');
+			$colarr=array('d_name', 'd_subname', 'd_episode', 'd_pids'/*, 'd_epname','d_eppic'*/, 'd_enname', 'd_letter', 'd_color', 'd_pic', 'd_picthumb', 'd_picslide', 'd_starring', 'd_directed', 'd_tag', 'd_remarks', 'd_area', 'd_lang', 'd_year', 'd_type', 'd_type_expand' , 'd_class', 'd_topic', 'd_hide', 'd_lock', 'd_state', 'd_level', 'd_usergroup', 'd_stint', 'd_stintdown', 'd_hits', 'd_dayhits', 'd_weekhits', 'd_monthhits', 'd_duration', 'd_up', 'd_down', 'd_score','d_scoreall', 'd_scorenum', 'd_addtime', 'd_time', 'd_hitstime', 'd_maketime', 'd_content', 'd_playfrom', 'd_playserver', 'd_playnote'/*, 'd_playurl'*/, 'd_downfrom', 'd_downserver', 'd_downnote', 'd_downurl');
 			for($i=0;$i<count($colarr);$i++){
 				$n=$colarr[$i];
 				$valarr[$n]=be("all",$n);
 			}
-
 
             //获取剧情(多个复选框)的相关设置数据
             $valarr['d_class'] = be('arr','d_class');
@@ -363,15 +355,15 @@ else if($ac=='save')
                 $valarr['d_class'] = ','.$valarr['d_class'].',';
             }
 
-            //rocking 获取多类别信息(多复选框)
+            //rocking 获取多类别信息(多复选框), 表单名为 数组， 以数组形式上传
             $valarr['d_pids'] = be('arr', 'd_pids');
             if(!empty($valarr['d_pids'])){
                 $valarr['d_pids'] = ','.$valarr['d_pids'].',';
             }
 
             //rocking 获取剧集标题和图片
-            $valarr['d_epname'] =  str_replace("\r\n", '#', be('all', 'epname')); //处理换行
-            $valarr['d_eppic'] = str_replace("\r\n", '#', be('all', 'eppic'));
+//            $valarr['d_epname'] =  str_replace("\r\n", '#', be('all', 'epname')); //处理换行
+//            $valarr['d_eppic'] = str_replace("\r\n", '#', be('all', 'eppic'));
 
 
 			if(strlen($valarr['d_addtime'])!=10) { $valarr['d_addtime']=time(); }
@@ -383,14 +375,30 @@ else if($ac=='save')
 			if($uptag=='1' && $valarr['d_tag']==''){
 				$valarr['d_tag'] = getTag($valarr['d_name'],$valarr['d_content']);
 			}
-			
-			$playurl=be('arr', 'playurl',',,,'); $playfrom=be('arr', 'playfrom'); $playserver=be('arr', 'playserver'); $playnote=be('arr','playnote');
-		    $playurlarr=explode(',,,',$playurl); $playfromarr=explode(',',$playfrom); $playserverarr=explode(',',$playserver); 
+
+            //播放集信息
+			$playurl=be('arr', 'playurl',',,,');  //各源的播放地址框， 用 ',,,'分隔
+            $playfrom=be('arr', 'playfrom');    //默认以 ','分隔
+            $playserver=be('arr', 'playserver');
+            $playnote=be('arr','playnote');
+
+		    $playurlarr=explode(',,,',$playurl);
+            $playfromarr=explode(',',$playfrom);
+            $playserverarr=explode(',',$playserver);
 		    $playnotearr=explode(',',$playnote);
-		    $playurlarrlen=count($playurlarr); $playfromarrlen=count($playfromarr); $playserverarrlen=count($playserverarr);
+
+            //计算 源(组)数
+		    $playurlarrlen=count($playurlarr);
+            $playfromarrlen=count($playfromarr);
+            $playserverarrlen=count($playserverarr);
 		    if(isN($playurl)) { $playurlarrlen=-1; }
-		    
-		    
+
+            //不管内容是否为空都要显示,取最大值
+            $playurlarrlen = max($playurlarrlen, $playfromarrlen);
+            $playfromarrlen = $playurlarrlen;
+
+
+            //download相关的，忽略
 		    $downurl=be('arr', 'downurl',',,,'); $downfrom=be('arr', 'downfrom'); $downserver=be('arr', 'downserver');$downnote=be('arr', 'downnote');
 		    $downurlarr=explode(',,,',$downurl); $downfromarr=explode(',',$downfrom); $downserverarr=explode(',',$downserver);
 		    $downnotearr=explode(',',$downnote);
@@ -398,19 +406,48 @@ else if($ac=='save')
 		    if(isN($downurl)) { $downurlarrlen=-1; }
 		    
 		    $rc = false;
+            $sql_insert_libs = '';
+            $epCnt = 0; //集数，不按 序号来，取url时更安全些
 		    for ($i=0;$i<$playfromarrlen;$i++){
 		        if ($playurlarrlen >= $i){
-		        	if(trim($playfromarr[$i])!='no'){
-				        if ($rc){ $d_playurl .= '$$$'; $d_playfrom .= '$$$'; $d_playserver .= '$$$'; $d_playnote.='$$$'; }
-				        $d_playfrom .= trim($playfromarr[$i]);
+		        	//if(trim($playfromarr[$i])!='no'){  //即便没有选择 播放源，也要保存数据， 没有选择播放源时，其值为 no
+				        if ($rc){ /*$d_playurl .= '$$$';*/ $d_playfrom .= '$$$'; $d_playserver .= '$$$'; $d_playnote.='$$$'; }
+                        $src = trim($playfromarr[$i]);
 				        $d_playserver .= trim($playserverarr[$i]);
 				        $d_playnote .=  trim($playnotearr[$i]);
-				        $d_playurl .= str_replace(chr(13),'#',str_replace(chr(10),'',trim($playurlarr[$i])));  //\r\n
+				        //$d_playurl .= str_replace(chr(13),'#',str_replace(chr(10),'',trim($playurlarr[$i])));  //\r\n
+
+                        $linearr = explode(chr(13), str_replace(chr(10),'',trim($playurlarr[$i]," \r\n")));
+                        if(empty($linearr[0]))
+                            continue;
+                        $d_playfrom .= $src;
+
+                        if($epCnt< count($linearr)){
+                            $epCnt = count($linearr);
+                        }
+                        foreach($linearr as $line){
+                            $line = trim($line);
+                            $itemarr = explode('|', $line);
+                            if(count($itemarr)!=4)
+                                continue;
+
+                            $idx = $itemarr[0];
+                            $name = $itemarr[1];
+                            $pic = $itemarr[2];
+                            $url = $itemarr[3];
+                            if(empty($sql_insert_libs)){
+                                $sql_insert_libs = 'insert into {pre}vod_libs (l_pid,l_idx,l_pic,l_downurl,l_name,l_src) values ';
+                            }
+                            //此处不能的$id不能被使用，因为 add操作时，该$id为空；edit操作没有问题，但是不能兼容。
+                            //所以此处替换成表示符，具体使用时再替换。 暂定 ## 替代 $id
+                            $sql_insert_libs .= "(##,$idx,'$pic','$url','$name','$src'),";
+                        }
 				        $rc =true;
-			        }
+			        //}
 		        }
 		    }
-		    
+            $sql_insert_libs = trim($sql_insert_libs, ',');
+
 		    $rc = false;
 		    for ($i=0;$i<$downfromarrlen;$i++){
 		        if ($downfromarrlen >= $i){
@@ -424,15 +461,16 @@ else if($ac=='save')
 				    }
 		        }
 		    }
-		    
-		    $valarr['d_playfrom']=$d_playfrom;
-		    $valarr['d_playserver']=$d_playserver;
-		    $valarr['d_playnote']=$d_playnote;
-		    $valarr['d_playurl']=$d_playurl;
-		    $valarr['d_downfrom']=$d_downfrom;
-		    $valarr['d_downserver']=$d_downserver;
-		    $valarr['d_downnote']=$d_downnote;
-		    $valarr['d_downurl']=$d_downurl;
+
+            $valarr['d_episode'] = $epCnt;
+		    $valarr['d_playfrom']=trim($d_playfrom, '$ ');
+		    $valarr['d_playserver']=trim($d_playserver, '$ ');
+		    $valarr['d_playnote']=trim($d_playnote, '$ ');
+		    //$valarr['d_playurl']=$d_playurl;
+		    $valarr['d_downfrom']=trim($d_downfrom, '$ ');
+		    $valarr['d_downserver']=trim($d_downserver, '$ ');
+		    $valarr['d_downnote']=trim($d_downnote, '$ ');
+		    $valarr['d_downurl']=trim($d_downurl, '$ ');
 		    $where = "d_id=".$id;
 		    if($GLOBALS['MAC']['view']['voddetail']==2 || $GLOBALS['MAC']['view']['vodplay']==2 || $GLOBALS['MAC']['view']['voddown']==2){
 		    	$ismake=true;
@@ -481,8 +519,6 @@ else if($ac=='save')
 				$js = '<img width=0 height=0 src="index.php?m=make-info-tab-game-no-{id}" />';
 			}
 			break;			
-		
-			
 	}
 
     //由于涉及到同时对两表进行修改，为保证数据同步，需要采用事务处理
@@ -494,8 +530,8 @@ else if($ac=='save')
         //>>>>>>>>>> 事务开始
         $db->query("BEGIN");
 
-        $res1 = false; $res2 = false; //针对vod
-        $res2 = false;
+        $res1 = true; $res2 = true;$res4=true;$res5=true; //针对vod
+        $res3 = true;
 
         if($flag=="add"){
             $res3 = $db->Add('{pre}'.$tab,$colarr,$valarr);
@@ -513,14 +549,12 @@ else if($ac=='save')
             }
         }
 
-
         //不管是 add还是 edit,此时的 $id 都不再为空(假定 $res3执行无误)
-
         //这是仅针对 vod表操作时才会涉及到的 分类表更改
         if($tab == "vod") {
-            //先删除所属分类
-            echo("delete from {pre}$tb_cls where r_did=$id <br>");
-            $res1 = $db->query("delete from {pre}$tb_cls where r_did=$id");
+            //先删除所属分类,r表
+            //echo("delete from {pre}$tb_r where r_did=$id <br>");
+            $res1 = $db->query("delete from {pre}$tb_r where r_did=$id");
 
             //再根据d_pids的值进行插入  !!!!!!!!! 若是 新增，则此时r_did还不存在
             $pidarr = explode(',', $valarr['d_pids']);
@@ -528,27 +562,26 @@ else if($ac=='save')
                 $pid = trim($pid);
                 if (strlen($pid) > 0) {
                     if ($sql == null) {
-                        $sql = "insert into {pre}$tb_cls (r_cid, r_did) values ";
+                        $sql = "insert into {pre}$tb_r (r_cid, r_did) values ";
                     }
                     $sql .= "($pid, $id),";
                 }
             }
             if (!empty($sql)) {
-                $sql = rtrim($sql, ', ');
-                echo $sql.'<br>';
-                $res2 = $db->query($sql);
-            } else {
-                $res2 = true;
+                //echo rtrim($sql, ', ').'<br>';
+                $res2 = $db->query(rtrim($sql, ', '));
             }
-        }
-        else{
-            //非vod表的操作，默认为 true
-            $res1 = true;
-            $res2 = true;
+
+            //更新libs表内的集信息,先清 再加
+            $res4 = $db->query('delete from {pre}vod_libs where l_pid='.$id);
+            if(!empty($sql_insert_libs)) {
+                $sql_insert_libs = strtr($sql_insert_libs, array('##'=>$id));
+                $res5 = $db->query($sql_insert_libs);
+            }
+            //echo($sql_insert_libs.'<br>');
         }
 
-
-        if($res1 && $res2 && $res3){
+        if($res1 && $res2 && $res3 && $res4 && $res5){
             mysql_query("COMMIT");
             $dbOpOk = true;
         }
@@ -663,7 +696,6 @@ else if($ac=='del')
 			}
 			$upcache=true;
 			break;
-
 		case "game_type":
 				$col="t_id";
 				$ids = be("get","t_id");
@@ -708,8 +740,7 @@ else if($ac=='del')
 					}
 				}
 				$upcache=true;
-				break;			
-			
+				break;
 		case "art_type" :
 			$col="t_id";
 			$ids = be("get","t_id");
@@ -791,8 +822,38 @@ else if($ac=='del')
 			}
 			break;
 	}
-	if (!isN($ids)) {$db->Delete('{pre}'.$tab, $col." in (".$ids.")"); }
-	if ($upcache){ updateCacheFile(); }
+
+    //>>>>>>>>>> 事务开始
+    $db->query("BEGIN");
+
+    $res1 = true;
+    $res2 = true;
+    $res3 = true;
+
+    if (!isN($ids)) {
+        $res1 = $db->Delete('{pre}'.$tab, $col." in (".$ids.")");
+        if($tab == 'vod') {
+            //删除某部影片时，需要同时删除其 r表关系、以及libs表中的分集信息
+            //echo 'delete from {pre}vod_r_type_dir where r_did in ('.$ids.')'.'<br>';
+            //exit('delete from {pre}vod_libs where l_pid in ('.$ids.')');
+            $res2 = $db->query('delete from {pre}vod_r_type_dir where r_did in ('.$ids.')');
+            $res3 = $db->query('delete from {pre}vod_libs where l_pid in ('.$ids.')');
+        }
+    }
+
+    $dbOpOk = true;
+    if($res1 && $res2 && $res3){
+        mysql_query("COMMIT");
+        $dbOpOk = true;
+    }
+    else{
+        mysql_query("ROLLBACK");
+        $dbOpOk = false;
+    }
+    $db->query("END");
+
+	if ($upcache && $dbOpOk){ updateCacheFile(); }
+
 	redirect ( getReferer() );
 }
 

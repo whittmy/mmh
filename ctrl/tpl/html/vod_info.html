@@ -183,7 +183,7 @@ function showUpload(n){
 </head>
 <body>
 <div id="showpic" style="display:none;"><img name="showpic_img" id="showpic_img" width="120" height="160"></div>
-<form action="admin_data.php?ac=save&tab=vod&tb_cls=vod_r_type_dir" method="post" name="form1" id="form1">
+<form action="admin_data.php?ac=save&tab=vod&tb_r=vod_r_type_dir" method="post" name="form1" id="form1">
 <input id="d_id" name="d_id" type="hidden" value="{d_id}">
 <input name="d_addtime" type="hidden" value="{d_addtime}">
 <input name="d_time" type="hidden" value="{d_time}">
@@ -359,7 +359,7 @@ function showUpload(n){
 
     <!--
         若 nanme的值以'[]'结尾，则其代表数组，表单处理时的数据传递方式为数组
-    --->
+
     <tbody id="ep_title">
     <tr><td>&nbsp;分集标题&图片:<br>&nbsp;&nbsp;&nbsp;&nbsp;(可空)</td>
         <td>
@@ -369,7 +369,7 @@ function showUpload(n){
         </td>
     </td></tr>
     </tbody>
-
+--->
     <!--  关于下面部分的显示控制，
         vod.php部分 通过 $rn='play'; $plt->set_block('main', 'list_'.$rn, 'rows_'.$rn);  默认没有数据时调用 $plt->set_var('rows_'.$rn,''); 来控制该网页模板的下面注释部分的内容被设置为空。
         点击添加按钮时，会调用 adm.js中的appendplay函数，来添加播放信息相关的数据：$("#playlist").append(area);，会将 下来列表中的数据传递到appendplay函数中
@@ -377,7 +377,7 @@ function showUpload(n){
      -->
 	<tbody id="playlist">
 	<!-- BEGIN list_play -->
-	<tr><td>&nbsp;播放地址{n}:</td><td><input id='playurlid{n}' name='playurlid[]' type='hidden' value='0'/>&nbsp;&nbsp;播放器：<select id='playfrom{n}' name='playfrom[]' style='width:130px'><option value='no'>暂无数据</option>{select_play_sel}</select>&nbsp;&nbsp;服务器组：<select id='playserver{n}' name='playserver[]'><option value='no'>暂无数据</option>{select_server_sel}</select>&nbsp;&nbsp;备注：<input id='playnote{n}' name='playnote[]' size='50' value='{playnote}'>&nbsp;&nbsp;操作：&nbsp;&nbsp;<a href="javascript:void(0)" onclick="clearSect('playurl{n}')">清空</a>&nbsp;&nbsp;<a href="javascript:void(0)" onclick="removeSect(this)">删除</a>&nbsp;&nbsp;<a href="javascript:void(0)" onclick="upSect(this)">上移</a>&nbsp;&nbsp;<a href="javascript:void(0)" onclick="downSect(this)">下移</a>&nbsp;&nbsp;<a href="javascript:void(0)" onclick="showUpload('playurl{n}')">上传</a>&nbsp;&nbsp;<br><br><textarea id='playurl{n}' name='playurl[]' style='width:100%;height:150px;'>{playurl}</textarea></td></tr>
+	<tr><td>&nbsp;播放地址{n}:</td><td><input id='playurlid{n}' name='playurlid[]' type='hidden' value='0'/>&nbsp;&nbsp;播放器：<select id='playfrom{n}' name='playfrom[]' style='width:130px'><option value='no'>暂无数据</option>{select_play_sel}</select>&nbsp;&nbsp;服务器组：<select id='playserver{n}' name='playserver[]'><option value='no'>暂无数据</option>{select_server_sel}</select>&nbsp;&nbsp;备注：<input id='playnote{n}' name='playnote[]' size='50' value='{playnote}'>&nbsp;&nbsp;操作：&nbsp;&nbsp;<a href="javascript:void(0)" onclick="clearSect('playurl{n}')">清空</a>&nbsp;&nbsp;<a href="javascript:void(0)" onclick="removeSect(this)">删除</a>&nbsp;&nbsp;<a href="javascript:void(0)" onclick="upSect(this)">上移</a>&nbsp;&nbsp;<a href="javascript:void(0)" onclick="downSect(this)">下移</a>&nbsp;&nbsp;<a href="javascript:void(0)" onclick="showUpload('playurl{n}')">上传</a>&nbsp;&nbsp;&nbsp;&nbsp;<font color="red">地址格式: 序号|标题|图片|地址</font><br><br><textarea id='playurl{n}' name='playurl[]' style='width:100%;height:150px;'>{playurl}</textarea></td></tr>
 	<!-- END list_play -->
 	</tbody>
     <tr>

@@ -5,7 +5,7 @@ var menu = {
 	
 	"mc":{"text":"扩展","default":"link","children":{"pic":{"text":"图片管理","url":"?m=extend-pic"},"link":{"text":"友情链接","url":"?m=extend-link"},"gbook":{"text":"系统留言本","url":"?m=extend-gbook"},"comment":{"text":"系统评论","url":"?m=extend-comment"}}},
 	
-	"md":{"text":"媒体","default":"vod","children":{"server":{"text":"服务器组","url":"?m=vod-server"},"player_config":{"text":"播放器","url":"?m=vod-player"},"deviceres":{"text":"设备资源接口", "url":"?m=vod-device_res_mgr"},"catatype":{"text":"资源分类","url":"?m=vod-cata"},"restype":{"text":"资源类型", "url":"?m=vod-restype"},"vodclass":{"text":"剧情分类","url":"?m=vod-class"},"vodtopic":{"text":"资源专题","url":"?m=vod-topic"},"vodrepeat":{"text":"检测重复数据","url":"?m=vod-list-repeat-ok"},"vod":{"text":"资源数据","url":"?m=vod-list"},"vodadd":{"text":"添加资源","url":"?m=vod-info"} }},
+	"md":{"text":"媒体","default":"vod","children":{/*"server":{"text":"服务器组","url":"?m=vod-server"},*/"player_config":{"text":"播放器","url":"?m=vod-player"},"deviceres":{"text":"设备资源接口", "url":"?m=vod-device_res_mgr"},"catatype":{"text":"资源分类","url":"?m=vod-cata"},"restype":{"text":"资源类型", "url":"?m=vod-restype"},"vodclass":{"text":"剧情分类","url":"?m=vod-class"},"vodtopic":{"text":"资源专题","url":"?m=vod-topic"},"vodrepeat":{"text":"检测重复数据","url":"?m=vod-list-repeat-ok"},"vod":{"text":"资源数据","url":"?m=vod-list"},"vodadd":{"text":"添加资源","url":"?m=vod-info"} }},
 
 	"me":{"text":"游戏","default":"game","children":{"gametype":{"text":"游戏分类","url":"?m=game-type"},"gameclass":{"text":"剧情分类","url":"?m=game-class"},"gametopic":{"text":"游戏专题","url":"?m=game-topic"},"gamerepeat":{"text":"检测重复数据","url":"?m=game-list-repeat-ok"},"game":{"text":"游戏数据","url":"?m=game-list"},"gameadd":{"text":"添加游戏","url":"?m=game-info"} }},
 	

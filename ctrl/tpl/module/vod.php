@@ -4,7 +4,7 @@ if(!defined('MAC_ADMIN')){
 }
 $col_cata=array('t_id','t_name','t_enname','t_pid','t_hide','t_sort','t_tpl','t_tpl_list','t_tpl_vod','t_tpl_play','t_tpl_down','t_key','t_des','t_title');
 $col_topic=array('t_id','t_name','t_enname','t_sort','t_tpl','t_pic','t_content','t_key','t_des','t_title','t_hide','t_level','t_up','t_down','t_score','t_scoreall','t_scorenum','t_hits','t_dayhits','t_weekhits','t_monthhits','t_addtime','t_time');
-$col_vod=array('d_id', 'd_name','d_pids', 'd_epname','d_eppic', 'd_subname', 'd_enname', 'd_letter', 'd_color', 'd_pic', 'd_picthumb', 'd_picslide', 'd_starring', 'd_directed', 'd_tag', 'd_remarks', 'd_area', 'd_lang', 'd_year', 'd_type', 'd_type_expand', 'd_class', 'd_hide', 'd_lock', 'd_state', 'd_level', 'd_usergroup', 'd_stint', 'd_stintdown', 'd_hits', 'd_dayhits', 'd_weekhits', 'd_monthhits', 'd_duration', 'd_up', 'd_down', 'd_score','d_scoreall', 'd_scorenum', 'd_addtime', 'd_time', 'd_hitstime', 'd_maketime', 'd_content', 'd_playfrom', 'd_playserver', 'd_playnote', 'd_playurl', 'd_downfrom', 'd_downserver', 'd_downnote', 'd_downurl');
+$col_vod=array('d_id', 'd_name','d_pids','d_episode', /*'d_epname','d_eppic',*/ 'd_subname', 'd_enname', 'd_letter', 'd_color', 'd_pic', 'd_picthumb', 'd_picslide', 'd_starring', 'd_directed', 'd_tag', 'd_remarks', 'd_area', 'd_lang', 'd_year', 'd_type', 'd_type_expand', 'd_class', 'd_hide', 'd_lock', 'd_state', 'd_level', 'd_usergroup', 'd_stint', 'd_stintdown', 'd_hits', 'd_dayhits', 'd_weekhits', 'd_monthhits', 'd_duration', 'd_up', 'd_down', 'd_score','d_scoreall', 'd_scorenum', 'd_addtime', 'd_time', 'd_hitstime', 'd_maketime', 'd_content','d_playnote' ,'d_playfrom', 'd_playserver' /*, 'd_playurl', 'd_downfrom', 'd_downserver', 'd_downnote', 'd_downurl'*/);
 
 $col_class=array('c_id','c_name','c_pid','c_hide','c_sort');
 
@@ -1315,13 +1315,27 @@ elseif($method=='list')
     $plt->set_var('repeatlen',$repeatlen);
     
 	if(!empty($wd) && $wd!='可搜索(资源名称)'){
-		$where .= ' and ( instr(d_name,\''.$wd.'\')>0 or instr(d_starring,\''.$wd.'\')>0 ) ';
+        if(preg_match('/(id\s*=\s*\d+)/', $wd, $matches)){
+            if(isset($matches[1]) && !empty($matches[1])) {
+                $tmp = str_replace('id', 'd_id', $matches[1]);
+                $where .= ' and ' . $tmp . ' ';
+            }
+        }
+        elseif(preg_match('/(sets\s*[><]{0,1}[=]{0,1}\d+)\s*/', $wd, $matches)){
+            if(isset($matches[1]) && !empty($matches[1])){
+                $tmp = str_replace('sets', 'd_episode', $matches[1]);
+                $where .= ' and '.$tmp.' ';
+            }
+        }
+        else{
+            $where .= ' and ( instr(d_name,\''.$wd.'\')>0 or instr(d_starring,\''.$wd.'\')>0 ) ';
+        }
 		$plt->set_var('wd',$wd);
 	}
 	else{
 		$plt->set_var('wd','可搜索(资源名称)');
 	}
-	
+
 	$topicarr = $MAC_CACHE['vodtopic'];
 	$topicarrn = array();
 	$topicarrv = array();
@@ -1441,13 +1455,13 @@ elseif($method=='list')
 		$sql='select count(*) from {pre}vod a INNER JOIN (SELECT d_id,left(d_name,'.$repeatlen.') as d_name1 from {pre}vod where CHAR_LENGTH(d_name)>='.$repeatlen.' ) b on a.d_id = b.d_id  INNER JOIN (select d_name1 from tmptable) c on b.d_name1 = c.d_name1 ';
 		$nums = $db->getOne($sql);
 		
-		$sql='select a.`d_id`, `d_name`, `d_pids`, `d_enname`, `d_color`, `d_pic`, `d_remarks`, `d_type`, `d_type_expand` ,`d_hide`, `d_lock`, `d_state`, `d_level`,  `d_hits`,  `d_addtime`, `d_time`, `d_maketime`, `d_playfrom`, `d_downfrom`,b.d_name1 from {pre}vod a INNER JOIN (SELECT d_id,left(d_name,'.$repeatlen.') as d_name1 from {pre}vod where CHAR_LENGTH(d_name)>='.$repeatlen.' ) b on a.d_id = b.d_id  INNER JOIN (select d_name1 from tmptable) c on b.d_name1 = c.d_name1 where 1=1 ORDER BY d_name asc  limit '.($MAC['app']['pagesize'] * ($page-1)) .",".$MAC['app']['pagesize'];
+		$sql='select a.`d_id`, `d_name`, `d_pids`, `d_episode`, `d_enname`, `d_color`, `d_pic`, `d_remarks`, `d_type`, `d_type_expand` ,`d_hide`, `d_lock`, `d_state`, `d_level`,  `d_hits`,  `d_addtime`, `d_time`, `d_maketime`, `d_playfrom`, `d_downfrom`,b.d_name1 from {pre}vod a INNER JOIN (SELECT d_id,left(d_name,'.$repeatlen.') as d_name1 from {pre}vod where CHAR_LENGTH(d_name)>='.$repeatlen.' ) b on a.d_id = b.d_id  INNER JOIN (select d_name1 from tmptable) c on b.d_name1 = c.d_name1 where 1=1 ORDER BY d_name asc  limit '.($MAC['app']['pagesize'] * ($page-1)) .",".$MAC['app']['pagesize'];
 		$rs = $db->query($sql);
 	}
 	else{
 		$sql = 'SELECT count(*) FROM {pre}vod'.$tmptab.' where 1=1 '.$where;
 		$nums = $db->getOne($sql);
-		$sql = "SELECT `d_id`, `d_name`, `d_pids`, `d_enname`, `d_color`, `d_pic`, `d_remarks`, `d_type`, `d_type_expand` ,`d_hide`, `d_lock`, `d_state`, `d_level`,  `d_hits`,  `d_addtime`, `d_time`,`d_maketime`, `d_playfrom`, `d_downfrom`  FROM {pre}vod".$tmptab." where 1=1 ";
+		$sql = "SELECT `d_id`, `d_name`, `d_pids`,`d_episode`, `d_enname`, `d_color`, `d_pic`, `d_remarks`, `d_type`, `d_type_expand` ,`d_hide`, `d_lock`, `d_state`, `d_level`,  `d_hits`,  `d_addtime`, `d_time`,`d_maketime`, `d_playfrom`, `d_downfrom`  FROM {pre}vod".$tmptab." where 1=1 ";
 		$sql .= $where;
 		$sql .= " ORDER BY ".$by." DESC limit ".($MAC['app']['pagesize'] * ($page-1)) .",".$MAC['app']['pagesize'];
 		$rs = $db->query($sql);
@@ -1559,7 +1573,8 @@ elseif($method=='info')  //同步参见对应模板： vod_info.html中的相关
 	array_push($colarr,'flag','backurl');
 
     //如果是编辑状态
-	if($flag=='edit'){
+    $playinfoarr = array();
+    if($flag=='edit'){
         //取 $id对应的数据信息(vod中的影片信息，播放地址在其它表中)
 		$row=$db->getRow('select * from {pre}vod where d_id='.$id);
 		if($row){
@@ -1571,6 +1586,19 @@ elseif($method=='info')  //同步参见对应模板： vod_info.html中的相关
 			}
 		}
 		unset($row);
+
+        //取 vod_libs中的播放组、以及单集信息
+        //playfrom即源的组合依旧放在vod中，但必须和和libs中的各个源(l_src)要一致
+        $rs = $db->query('select * from {pre}vod_libs where l_pid='.$id.' order by l_idx');
+        $line_divider = '|';
+        while ($row = $db ->fetch_array($rs)){
+            $src = $row['l_src'];
+            if(isset($playinfoarr[$src]))
+                $playinfoarr[$src] = $playinfoarr[$src]. '#'. $row['l_idx'].$line_divider.$row['l_name'].$line_divider.$row['l_pic'].$line_divider.$row['l_downurl'];
+            else
+                $playinfoarr[$src] = $row['l_idx'].$line_divider.$row['l_name'].$line_divider.$row['l_pic'].$line_divider.$row['l_downurl'];
+        }
+        unset($row);
 	}
 	$valarr['flag']=$flag;
 	$valarr['backurl']=$backurl;
@@ -1632,17 +1660,17 @@ elseif($method=='info')  //同步参见对应模板： vod_info.html中的相关
 	$plt->set_var('select_server',str_replace("'","\'",$select_server));
 
     //处理分集标题
-    if(!empty($valarr['d_epname'])){
-        $epname = str_replace('#', Chr(13), $valarr['d_epname']);
-    }
-    $plt->set_var('epname',$epname);
+//    if(!empty($valarr['d_epname'])){
+//        $epname = str_replace('#', Chr(13), $valarr['d_epname']);
+//    }
+//    $plt->set_var('epname',$epname);
 
 
     //处理分集图片url
-    if(!empty($valarr['d_eppic'])){
-        $eppic = str_replace('#', Chr(13), $valarr['d_eppic']);
-    }
-    $plt->set_var('eppic', $eppic);
+//    if(!empty($valarr['d_eppic'])){
+//        $eppic = str_replace('#', Chr(13), $valarr['d_eppic']);
+//    }
+//    $plt->set_var('eppic', $eppic);
 
 	$playnum = 1;
 	$rn='play';
@@ -1652,13 +1680,15 @@ elseif($method=='info')  //同步参见对应模板： vod_info.html中的相关
 		$playfromarr = explode('$$$',$valarr['d_playfrom']);   //这个将作为我们的播放来源，按来源分成不同的播放地址组
 	    $playserverarr = explode('$$$',$valarr['d_playserver']);
 	    $playnotearr = explode('$$$',$valarr['d_playnote']);
-	    $playurlarr = explode('$$$',$valarr['d_playurl']);
+	    //$playurlarr = explode('$$$',$valarr['d_playurl']);
+        //
 	    $i=0;
 		foreach($playfromarr as $a){
 			$playfrom = $playfromarr[$i];
 			$playserver = $playserverarr[$i];
 	    	$playnote = $playnotearr[$i];
-	    	$playurl = str_replace('#', Chr(13),$playurlarr[$i]);
+	    	//$playurl = str_replace('#', Chr(13),$playurlarr[$i]);
+            $playurl = str_replace('#', Chr(13), $playinfoarr[$a]);
 
             //播放器选项与 $playfrom关联
             //替换selcet中的option选项，已确定哪个是被选中的。

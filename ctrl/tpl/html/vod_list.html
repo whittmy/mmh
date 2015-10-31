@@ -266,6 +266,7 @@ function batchSet(){
 	<th width="100"  >来源</th>
 	<th width="40" style="text-align:center">推荐</th>
 	<th width="40" style="text-align:center">浏览</th>
+    <th width="40" style="text-align:center">集数</th>
 	<th width="135" style="text-align:center">更新时间</th>
 	<th width="100" style="text-align:center">操作</th>
 	</tr>
@@ -282,7 +283,8 @@ function batchSet(){
 	<td title="{d_playfrom}" style= "white-space:nowrap;overflow:hidden;">{d_playfrom}</td>
 	<td  align="center" id="level_{d_id}">&nbsp;<img src="../images/icons/ico{d_level}.gif" border="0" style="cursor: pointer;" onclick="ajaxshow('level_{d_id}','level','vod','d_id','d_level','{d_id}')" /></td>
 	<td  align="center"><!-- IF ismake --><a href="?m=make-info-tab-vod-no-{d_id}"><img src="../images/icons/html_no.gif"></a><!-- ELSE ismake --><a target="_blank" href="{d_link}"><img src="../images/icons/html_ok.gif"></a><!-- ENDIF ismake --></td>
-	<td  align="center">{d_time}</td>
+	<td align="center">{d_episode}</td>
+    <td  align="center">{d_time}</td>
 	<td align="center">
 	<a href="?m=vod-info-id-{d_id}">修改</a> |
 	<a href="admin_data.php?ac=del&tab=vod&d_id={d_id}" onClick="return confirm('确定要删除吗?');">删除</a>
