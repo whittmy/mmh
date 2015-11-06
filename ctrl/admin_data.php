@@ -435,14 +435,18 @@ else if($ac=='save'){
                         }
                         foreach($linearr as $line){
                             $line = trim($line);
-                            $itemarr = explode('|', $line);
-                            if(count($itemarr)!=4)
+                            if(empty($line)){
                                 continue;
+                            }
+                            $itemarr = explode('|', $line);
+                            if(count($itemarr)!=4){
+                                exit('error-format:'.$itemarr[0].','.$itemarr[1].'....!!!');
+                            }
 
-                            $idx = $itemarr[0];
-                            $name = $itemarr[1];
-                            $pic = $itemarr[2];
-                            $url = $itemarr[3];
+                            $idx = trim($itemarr[0]);
+                            $name = trim($itemarr[1]);
+                            $pic = trim($itemarr[2]);
+                            $url = trim($itemarr[3]);
                             if(empty($sql_insert_libs)){
                                 $sql_insert_libs = 'insert into {pre}vod_libs (l_pid,l_idx,l_pic,l_downurl,l_name,l_src) values ';
                             }
