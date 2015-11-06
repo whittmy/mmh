@@ -13,6 +13,14 @@ $col=be('all','col');
 $val=trim(be('all','val'));
 $ajax=be('all','ajax');
 
+
+function db_error(){
+    $msg = $db->error();
+    @$db->query("ROLLBACK");
+    $db->close();
+    die('{"status":"'.$msg.'"}');
+}
+
 if($ac=='checkcache'){
 	$res='no';
 	if(file_exists(MAC_ROOT.'/cache/cache_data.lock')){
@@ -440,7 +448,7 @@ else if($ac=='save'){
                             }
                             //此处不能的$id不能被使用，因为 add操作时，该$id为空；edit操作没有问题，但是不能兼容。
                             //所以此处替换成表示符，具体使用时再替换。 暂定 ## 替代 $id
-                            $sql_insert_libs .= "(##,$idx,'$pic','$url','$name','$src'),";
+                            $sql_insert_libs .= "(##,$idx,'$pic','$url','".addslashes($name)."','$src'),";
                         }
 				        $rc =true;
 			        //}
@@ -530,11 +538,10 @@ else if($ac=='save'){
         //>>>>>>>>>> 事务开始
         $db->query("BEGIN");
 
-        $res1 = true; $res2 = true;$res4=true;$res5=true; //针对vod
-        $res3 = true;
-
         if($flag=="add"){
-            $res3 = $db->Add('{pre}'.$tab,$colarr,$valarr);
+            if(!$db->Add('{pre}'.$tab,$colarr,$valarr)){
+                db_error();
+            }
             $id=$db->insert_id(); //rocking
             if($ismake){
                 //rocking $id=$db->insert_id();
@@ -543,7 +550,9 @@ else if($ac=='save'){
         }
         elseif($flag=="edit"){
             $backurl=be("all","backurl");
-            $res3 = $db->Update('{pre}'.$tab,$colarr,$valarr,$where,1);
+            if(!$db->Update('{pre}'.$tab,$colarr,$valarr,$where,1)){
+                db_error();
+            }
             if($ismake){
                 $js = str_replace('{id}',$id,$js);
             }
@@ -554,7 +563,9 @@ else if($ac=='save'){
         if($tab == "vod") {
             //先删除所属分类,r表
             //echo("delete from {pre}$tb_r where r_did=$id <br>");
-            $res1 = $db->query("delete from {pre}$tb_r where r_did=$id");
+            if(!$db->query("delete from {pre}$tb_r where r_did=$id")){
+                db_error();
+            }
 
             //再根据d_pids的值进行插入  !!!!!!!!! 若是 新增，则此时r_did还不存在
             $pidarr = explode(',', $valarr['d_pids']);
@@ -569,45 +580,39 @@ else if($ac=='save'){
             }
             if (!empty($sql)) {
                 //echo rtrim($sql, ', ').'<br>';
-                $res2 = $db->query(rtrim($sql, ', '));
+                if(!$db->query(rtrim($sql, ', '))){
+                    db_error();
+                }
             }
 
             //更新libs表内的集信息,先清 再加
-            $res4 = $db->query('delete from {pre}vod_libs where l_pid='.$id);
+            if(!$db->query('delete from {pre}vod_libs where l_pid='.$id)){
+                db_error();
+            }
+
             if(!empty($sql_insert_libs)) {
                 $sql_insert_libs = strtr($sql_insert_libs, array('##'=>$id));
-                $res5 = $db->query($sql_insert_libs);
+                //exit($sql_insert_libs);
+                if(!$db->query($sql_insert_libs)){
+                    db_error();
+                }
             }
             //echo($sql_insert_libs.'<br>');
         }
 
-        if($res1 && $res2 && $res3 && $res4 && $res5){
-            mysql_query("COMMIT");
-            $dbOpOk = true;
-        }
-        else{
-            mysql_query("ROLLBACK");
-            $dbOpOk = false;
-        }
+        $db->query("COMMIT");
         $db->query("END");
         //<<<<<<<<<<<<<<<<<<<<<<
     }
 
     //exit("$res1----$res2---$res3");
-
-    if($upcache && $dbOpOk){ updateCacheFile(); }
+    if($upcache){ updateCacheFile(); }
 
     if(!empty($msg_diy)){
-        if($dbOpOk)
-            exit('{"status":"ok"}');
-        else
-            exit('{"status":"error"}');
+       exit('{"status":"ok"}');
     }
 
-    if($dbOpOk)
-        showMsg('数据已保存'.$js,$backurl);
-    else
-        showMsg('数据库错误，保存失败', $backurl);
+    showMsg('数据已保存'.$js,$backurl);
 }
 
 else if($ac=='del')
@@ -826,33 +831,25 @@ else if($ac=='del')
     //>>>>>>>>>> 事务开始
     $db->query("BEGIN");
 
-    $res1 = true;
-    $res2 = true;
-    $res3 = true;
-
     if (!isN($ids)) {
-        $res1 = $db->Delete('{pre}'.$tab, $col." in (".$ids.")");
+        if(!$db->Delete('{pre}'.$tab, $col." in (".$ids.")")){
+            db_error();
+        }
         if($tab == 'vod') {
             //删除某部影片时，需要同时删除其 r表关系、以及libs表中的分集信息
-            //echo 'delete from {pre}vod_r_type_dir where r_did in ('.$ids.')'.'<br>';
-            //exit('delete from {pre}vod_libs where l_pid in ('.$ids.')');
-            $res2 = $db->query('delete from {pre}vod_r_type_dir where r_did in ('.$ids.')');
-            $res3 = $db->query('delete from {pre}vod_libs where l_pid in ('.$ids.')');
+            if(!$db->Delete('{pre}vod_r_type_dir', "r_did in (".$ids.")")){
+                db_error();
+            }
+            if(!$db->Delete('{pre}vod_libs', "l_pid in (".$ids.")")){
+                db_error();
+            }
         }
     }
 
-    $dbOpOk = true;
-    if($res1 && $res2 && $res3){
-        mysql_query("COMMIT");
-        $dbOpOk = true;
-    }
-    else{
-        mysql_query("ROLLBACK");
-        $dbOpOk = false;
-    }
+    $db->query("COMMIT");
     $db->query("END");
 
-	if ($upcache && $dbOpOk){ updateCacheFile(); }
+	if ($upcache){ updateCacheFile(); }
 
 	redirect ( getReferer() );
 }

@@ -73,7 +73,10 @@ class AppDb
 		//exit($sql);
 		return mysql_query($sql, $this->sql_id);
 	}
-	
+
+    function error(){
+        return mysql_error($this->sql_id);
+    }
 	function queryArray($sql,$keyf='')
 	{
 		$array = array();
