@@ -1350,13 +1350,43 @@ elseif($ac=='hits')
 	}
 }
 
-elseif($ac=='type')
+elseif($ac=='cata')
 {
 	if ($show ==1){
-		echo '<select id="val" name="val"><option value="0">请选择栏目</option>' . makeSelectAll("{pre}".$tab."_type","t_id","t_name","t_pid","t_sort",0,"","&nbsp;|&nbsp;&nbsp;","") .'</select><input type="button" value="确定" onclick="ajaxsubmit(\''.$ac.'\',\''.$tab.'\',\''.$colid.'\',\''.$col.'\',\''.$id.'\');" class=input> <input type="button" value="取消" onclick="closew();" class=input>';
+		echo '<select id="val" name="val"><option value="0">请选择栏目</option>' . makeSelectAll("{pre}".$tab."_cata","t_id","t_name","t_pid","t_sort",0,"","&nbsp;|&nbsp;&nbsp;","") .'</select><input type="button" value="确定" onclick="ajaxsubmit(\''.$ac.'\',\''.$tab.'\',\''.$colid.'\',\''.$col.'\',\''.$id.'\');" class=input> <input type="button" value="取消" onclick="closew();" class=input>';
 	}
 	else{
-		$db->query ("UPDATE {pre}".$tab . " set ". $col ."=".$val. " WHERE " . $colid ." IN(".$id.")" );
+        if(strlen($id) > 0){
+            $db->query("BEGIN");
+
+            $sql = "delete from {pre}vod_r_type_dir where r_did in ($id)";
+            //echo $sql.'<br>';
+            $db->query($sql) or die('reload');
+
+
+            $sql = "update {pre}vod set d_pids='$val' where d_id in ($id)";
+            //echo $sql.'<br>';
+            $db->query($sql) or die('reload');
+
+            $idarr = explode(',', $id);
+            $sql = '';
+            foreach($idarr as $i){
+                if(empty($sql)){
+                    $sql = "insert into {pre}vod_r_type_dir (r_cid,r_did) values ";
+                }
+                $sql .= "($val, $i),";
+            }
+            $sql = trim($sql, ',');
+            //exit( $sql);
+            $db->query($sql) or die('reload');
+
+
+            $db->query("COMMIT");
+            $db->query("END");
+        }
+
+        //$sql = "UPDATE {pre}".$tab . " set ". $col ."=".$val. " WHERE " . $colid ." IN(".$id.")" ;
+		//$db->query ($sql);
 		echo "reload";
 	}
 }
